@@ -21,13 +21,15 @@ certbot_auto_renew: true
 ubuntu_version: "24.04"
 
 # --- SSH Hardening ---
+# IMPORTANT: After deployment, copy your SSH key then set
+# ssh_password_authentication to "no" and re-run --tags hardening
 ssh_port: 22
-ssh_permit_root_login: "no"
-ssh_password_authentication: "no"
+ssh_permit_root_login: "prohibit-password"
+ssh_password_authentication: "yes"
 ssh_max_auth_tries: 3
 ssh_client_alive_interval: 300
 ssh_client_alive_count_max: 2
-ssh_allowed_users: "razvan"
+ssh_allowed_users: "razvan root"
 
 # --- Firewall (UFW) ---
 # PUBLIC SERVER: Only expose SSH, HTTP, HTTPS, and Wazuh agent ports
