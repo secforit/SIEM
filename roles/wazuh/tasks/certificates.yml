@@ -11,9 +11,9 @@
     group: root
     mode: "0500"
 
-- name: Download Wazuh cert tool
+- name: Download Wazuh cert tool (latest 4.x)
   ansible.builtin.get_url:
-    url: "https://packages.wazuh.com/{{ wazuh_version | regex_replace('^(\\d+\\.\\d+).*', '\\1') }}/wazuh-certs-tool.sh"
+    url: "https://packages.wazuh.com/4.10/wazuh-certs-tool.sh"
     dest: /tmp/wazuh-certs-tool.sh
     mode: "0700"
 

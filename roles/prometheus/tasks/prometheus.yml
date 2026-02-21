@@ -1,7 +1,22 @@
 ---
 # ============================================================
-# Prometheus Server Installation
+# Prometheus Server Installation (latest from GitHub)
 # ============================================================
+
+- name: Get latest Prometheus release version
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/prometheus/prometheus/releases/latest
+    return_content: true
+    headers:
+      Accept: application/vnd.github.v3+json
+  register: prometheus_latest
+  until: prometheus_latest.status == 200
+  retries: 3
+  delay: 5
+
+- name: Set Prometheus version fact
+  ansible.builtin.set_fact:
+    _prometheus_version: "{{ prometheus_latest.json.tag_name | regex_replace('^v', '') }}"
 
 - name: Check if Prometheus is already installed
   ansible.builtin.stat:
@@ -15,23 +30,23 @@
   failed_when: false
   when: prometheus_binary.stat.exists
 
-- name: Download Prometheus {{ prometheus_version }}
+- name: Download Prometheus {{ _prometheus_version }}
   ansible.builtin.get_url:
-    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
-    dest: "/tmp/prometheus-{{ prometheus_version }}.tar.gz"
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ _prometheus_version }}/prometheus-{{ _prometheus_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/prometheus-{{ _prometheus_version }}.tar.gz"
     mode: "0644"
-  when: not prometheus_binary.stat.exists or (prometheus_version not in (prometheus_installed_version.stderr | default('')))
+  when: not prometheus_binary.stat.exists or (_prometheus_version not in (prometheus_installed_version.stderr | default('')))
 
 - name: Extract Prometheus
   ansible.builtin.unarchive:
-    src: "/tmp/prometheus-{{ prometheus_version }}.tar.gz"
+    src: "/tmp/prometheus-{{ _prometheus_version }}.tar.gz"
     dest: /tmp
     remote_src: true
-  when: not prometheus_binary.stat.exists or (prometheus_version not in (prometheus_installed_version.stderr | default('')))
+  when: not prometheus_binary.stat.exists or (_prometheus_version not in (prometheus_installed_version.stderr | default('')))
 
 - name: Install Prometheus binaries
   ansible.builtin.copy:
-    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    src: "/tmp/prometheus-{{ _prometheus_version }}.linux-amd64/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     owner: prometheus
     group: prometheus
@@ -44,7 +59,7 @@
 
 - name: Install Prometheus console libraries
   ansible.builtin.copy:
-    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}/"
+    src: "/tmp/prometheus-{{ _prometheus_version }}.linux-amd64/{{ item }}/"
     dest: "{{ prometheus_config_dir }}/{{ item }}/"
     owner: prometheus
     group: prometheus
@@ -87,5 +102,5 @@
     path: "{{ item }}"
     state: absent
   loop:
-    - "/tmp/prometheus-{{ prometheus_version }}.tar.gz"
-    - "/tmp/prometheus-{{ prometheus_version }}.linux-amd64"
+    - "/tmp/prometheus-{{ _prometheus_version }}.tar.gz"
+    - "/tmp/prometheus-{{ _prometheus_version }}.linux-amd64"

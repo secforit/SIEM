@@ -5,7 +5,7 @@
 
 - name: Display Grafana deployment start
   ansible.builtin.debug:
-    msg: "Deploying Grafana {{ grafana_version }}"
+    msg: "Deploying Grafana (latest)"
 
 - name: Include Grafana installation
   ansible.builtin.include_tasks: install.yml

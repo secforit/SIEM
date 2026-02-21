@@ -1,30 +1,52 @@
 ---
 # ============================================================
-# Prometheus Node Exporter Installation
+# Prometheus Node Exporter Installation (latest from GitHub)
 # ============================================================
+
+- name: Get latest Node Exporter release version
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/prometheus/node_exporter/releases/latest
+    return_content: true
+    headers:
+      Accept: application/vnd.github.v3+json
+  register: node_exporter_latest
+  until: node_exporter_latest.status == 200
+  retries: 3
+  delay: 5
+
+- name: Set Node Exporter version fact
+  ansible.builtin.set_fact:
+    _node_exporter_version: "{{ node_exporter_latest.json.tag_name | regex_replace('^v', '') }}"
 
 - name: Check if Node Exporter is already installed
   ansible.builtin.stat:
     path: /usr/local/bin/node_exporter
   register: node_exporter_binary
 
-- name: Download Node Exporter {{ node_exporter_version }}
+- name: Get installed Node Exporter version
+  ansible.builtin.command: /usr/local/bin/node_exporter --version
+  register: node_exporter_installed_version
+  changed_when: false
+  failed_when: false
+  when: node_exporter_binary.stat.exists
+
+- name: Download Node Exporter {{ _node_exporter_version }}
   ansible.builtin.get_url:
-    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
-    dest: "/tmp/node_exporter-{{ node_exporter_version }}.tar.gz"
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ _node_exporter_version }}/node_exporter-{{ _node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter-{{ _node_exporter_version }}.tar.gz"
     mode: "0644"
-  when: not node_exporter_binary.stat.exists
+  when: not node_exporter_binary.stat.exists or (_node_exporter_version not in (node_exporter_installed_version.stdout | default('')))
 
 - name: Extract Node Exporter
   ansible.builtin.unarchive:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.tar.gz"
+    src: "/tmp/node_exporter-{{ _node_exporter_version }}.tar.gz"
     dest: /tmp
     remote_src: true
-  when: not node_exporter_binary.stat.exists
+  when: not node_exporter_binary.stat.exists or (_node_exporter_version not in (node_exporter_installed_version.stdout | default('')))
 
 - name: Install Node Exporter binary
   ansible.builtin.copy:
-    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    src: "/tmp/node_exporter-{{ _node_exporter_version }}.linux-amd64/node_exporter"
     dest: /usr/local/bin/node_exporter
     owner: node_exporter
     group: prometheus
@@ -55,5 +77,5 @@
     path: "{{ item }}"
     state: absent
   loop:
-    - "/tmp/node_exporter-{{ node_exporter_version }}.tar.gz"
-    - "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64"
+    - "/tmp/node_exporter-{{ _node_exporter_version }}.tar.gz"
+    - "/tmp/node_exporter-{{ _node_exporter_version }}.linux-amd64"

@@ -1,12 +1,12 @@
 ---
 # ============================================================
-# Wazuh Manager Installation
+# Wazuh Manager Installation (latest)
 # ============================================================
 
-- name: Install Wazuh Manager
+- name: Install Wazuh Manager (latest)
   ansible.builtin.apt:
-    name: "wazuh-manager={{ wazuh_version }}-*"
-    state: present
+    name: wazuh-manager
+    state: latest
   environment:
     DEBIAN_FRONTEND: noninteractive
 

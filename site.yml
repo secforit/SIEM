@@ -122,9 +122,10 @@
           ║                                                            ║
           ║  Public URLs (via Nginx + Let's Encrypt):                  ║
           ║  ────────────────────────────────────────                  ║
-          ║  Wazuh Dashboard:  https://siem.secforit.ro                ║
-          ║  Grafana:          https://grafana.secforit.ro             ║
-          ║  Prometheus:       https://prometheus.secforit.ro          ║
+          ║  Wazuh Dashboard:  https://siem.homelab84212.secforit.ro   ║
+          ║  Grafana:          https://grafana.homelab84212.secforit.ro║
+          ║  Prometheus:       https://prometheus.homelab84212.secforit.ro║
+          ║  Wazuh API:        https://wazuh.homelab84212.secforit.ro  ║
           ║                                                            ║
           ║  Wazuh Agent Ports (public):                               ║
           ║  ────────────────────────────                              ║

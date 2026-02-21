@@ -5,17 +5,17 @@
 # ============================================================
 
 # --- Prometheus Server ---
-prometheus_version: "2.54.1"
+# Version auto-detected from GitHub releases API (latest)
 prometheus_listen_address: "127.0.0.1:9090"
 prometheus_storage_retention: "15d"
 prometheus_storage_retention_size: "5GB"
 prometheus_data_dir: "/var/lib/prometheus"
 prometheus_config_dir: "/etc/prometheus"
 
-prometheus_web_external_url: "https://prometheus.secforit.ro"
+prometheus_web_external_url: "https://prometheus.homelab84212.secforit.ro"
 
 # --- Node Exporter ---
-node_exporter_version: "1.8.2"
+# Version auto-detected from GitHub releases API (latest)
 node_exporter_listen_address: "127.0.0.1:9100"
 node_exporter_enabled_collectors:
   - systemd
@@ -29,7 +29,6 @@ node_exporter_enabled_collectors:
 
 # --- Alertmanager (optional) ---
 alertmanager_enabled: false
-alertmanager_version: "0.27.0"
 
 # --- Scrape targets ---
 prometheus_scrape_configs:

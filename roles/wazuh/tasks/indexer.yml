@@ -1,12 +1,12 @@
 ---
 # ============================================================
-# Wazuh Indexer Installation
+# Wazuh Indexer Installation (latest)
 # ============================================================
 
-- name: Install Wazuh Indexer
+- name: Install Wazuh Indexer (latest)
   ansible.builtin.apt:
-    name: "wazuh-indexer={{ wazuh_version }}-*"
-    state: present
+    name: wazuh-indexer
+    state: latest
   environment:
     DEBIAN_FRONTEND: noninteractive
 

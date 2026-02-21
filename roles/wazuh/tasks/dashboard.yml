@@ -1,12 +1,12 @@
 ---
 # ============================================================
-# Wazuh Dashboard Installation
+# Wazuh Dashboard Installation (latest)
 # ============================================================
 
-- name: Install Wazuh Dashboard
+- name: Install Wazuh Dashboard (latest)
   ansible.builtin.apt:
-    name: "wazuh-dashboard={{ wazuh_version }}-*"
-    state: present
+    name: wazuh-dashboard
+    state: latest
   environment:
     DEBIAN_FRONTEND: noninteractive
 

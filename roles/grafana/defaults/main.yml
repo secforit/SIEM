@@ -3,14 +3,14 @@
 # Grafana Configuration
 # ============================================================
 
-grafana_version: "11.4.0"
+# Version: latest from APT repository
 grafana_apt_repo: "https://apt.grafana.com"
 grafana_gpg_key: "https://apt.grafana.com/gpg.key"
 
 # Server
 grafana_listen_address: "127.0.0.1"
 grafana_port: 3000
-grafana_domain: "grafana.secforit.ro"
+grafana_domain: "grafana.homelab84212.secforit.ro"
 grafana_root_url: "https://{{ grafana_domain }}/"
 grafana_serve_from_sub_path: false
 

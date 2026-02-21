@@ -23,9 +23,9 @@
     filename: grafana
     update_cache: true
 
-- name: Install Grafana
+- name: Install Grafana (latest)
   ansible.builtin.apt:
-    name: "grafana={{ grafana_version }}"
-    state: present
+    name: grafana
+    state: latest
   environment:
     DEBIAN_FRONTEND: noninteractive

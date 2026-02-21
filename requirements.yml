@@ -1,35 +1,19 @@
 ---
-# Ansible Galaxy Collections
+# Ansible Galaxy Collections (latest)
 collections:
-  # Prometheus community collection v0.27.6
   - name: prometheus.prometheus
-    version: ">=0.27.0"
     source: https://galaxy.ansible.com
 
-  # Grafana official collection v6.0.6
   - name: grafana.grafana
-    version: ">=6.0.0"
     source: https://galaxy.ansible.com
 
-  # Community general (dependency)
   - name: community.general
-    version: ">=8.2.0"
     source: https://galaxy.ansible.com
 
-  # Ansible POSIX (dependency)
   - name: ansible.posix
-    version: ">=1.5.4"
     source: https://galaxy.ansible.com
 
-# Ansible Galaxy Roles
+# Ansible Galaxy Roles (latest)
 roles:
-  # Certbot / Let's Encrypt
   - name: geerlingguy.certbot
-    version: "6.1.0"
-
-  # Nginx
   - name: geerlingguy.nginx
-    version: "3.3.0"
-
-# Wazuh Ansible (clone separately)
-# git clone --branch v4.14.3 https://github.com/wazuh/wazuh-ansible.git /etc/ansible/roles/wazuh-ansible

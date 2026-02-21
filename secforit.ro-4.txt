@@ -1,0 +1,54 @@
+;;
+;; Domain:     secforit.ro.
+;; Exported:   2026-02-21 10:22:51
+;;
+;; This file is intended for use for informational and archival
+;; purposes ONLY and MUST be edited before use on a production
+;; DNS server.  In particular, you must:
+;;   -- update the SOA record with the correct authoritative name server
+;;   -- update the SOA record with the contact e-mail address information
+;;   -- update the NS record(s) with the authoritative name servers for this domain.
+;;
+;; For further information, please consult the BIND documentation
+;; located on the following website:
+;;
+;; http://www.isc.org/
+;;
+;; And RFC 1035:
+;;
+;; http://www.ietf.org/rfc/rfc1035.txt
+;;
+;; Please note that we do NOT offer technical support for any use
+;; of this zone data, the BIND name server, or any other third-party
+;; DNS software.
+;;
+;; Use at your own risk.
+;; SOA Record
+secforit.ro	3600	IN	SOA	felicity.ns.cloudflare.com. dns.cloudflare.com. 2052333597 10000 2400 604800 3600
+
+;; NS Records
+secforit.ro.	86400	IN	NS	felicity.ns.cloudflare.com.
+secforit.ro.	86400	IN	NS	jacqueline.ns.cloudflare.com.
+
+;; A Records
+mail.secforit.ro.	1	IN	A	93.113.55.14 ; cf_tags=cf-proxied:false
+secforit.ro.	1	IN	A	93.113.55.14 ; cf_tags=cf-proxied:true
+siem.homelab84212.secforit.ro.	1	IN	A	37.27.94.252 ; cf_tags=cf-proxied:true
+grafana.homelab84212.secforit.ro.	1	IN	A	37.27.94.252 ; cf_tags=cf-proxied:true
+prometheus.homelab84212.secforit.ro.	1	IN	A	37.27.94.252 ; cf_tags=cf-proxied:true
+wazuh.homelab84212.secforit.ro.	1	IN	A	37.27.94.252 ; cf_tags=cf-proxied:true
+
+;; CNAME Records
+day0.secforit.ro.	600	IN	CNAME	be8e50b81012a6cb.vercel-dns-017.com. ; cf_tags=cf-proxied:false
+stream.secforit.ro.	600	IN	CNAME	af0cff78f4365bdd.vercel-dns-017.com. ; cf_tags=cf-proxied:false
+www.secforit.ro.	600	IN	CNAME	cba94199665e3279.vercel-dns-017.com. ; cf_tags=cf-proxied:false
+
+;; MX Records
+secforit.ro.	1	IN	MX	0 mail.secforit.ro.
+
+;; TXT Records
+_dmarc.secforit.ro.	1	IN	TXT	"v=DMARC1; p=none; rua=mailto:razvan@secforit.ro"
+secforit.ro.	1	IN	TXT	"v=spf1 mx a ip4:93.113.55.14 ~all"
+_vercel.secforit.ro.	600	IN	TXT	"vc-domain-verify=day0.secforit.ro,0b71ceb337f267321420,dc"
+_vercel.secforit.ro.	600	IN	TXT	"vc-domain-verify=stream.secforit.ro,7497fbe4b6003cc9bc58,dc"
+_vercel.secforit.ro.	600	IN	TXT	"vc-domain-verify=www.secforit.ro,24b8dd7cf08da2c2180b,dc"

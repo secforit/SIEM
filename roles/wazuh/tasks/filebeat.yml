@@ -1,13 +1,12 @@
 ---
 # ============================================================
-# Filebeat Installation (Wazuh events -> Indexer)
+# Filebeat Installation (Wazuh events -> Indexer) (latest)
 # ============================================================
 
-- name: Install Filebeat
+- name: Install Filebeat (latest from Wazuh repo)
   ansible.builtin.apt:
-    name: "filebeat={{ filebeat_version }}"
-    state: present
-    allow_downgrade: true
+    name: filebeat
+    state: latest
   environment:
     DEBIAN_FRONTEND: noninteractive
 
@@ -33,9 +32,9 @@
     mode: "0644"
   notify: restart filebeat
 
-- name: Download Wazuh alerts template
+- name: Download Wazuh alerts template (latest master)
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/wazuh/wazuh/v{{ wazuh_version }}/extensions/elasticsearch/7.x/wazuh-template.json"
+    url: "https://raw.githubusercontent.com/wazuh/wazuh/master/extensions/elasticsearch/7.x/wazuh-template.json"
     dest: /etc/filebeat/wazuh-template.json
     mode: "0644"
   failed_when: false

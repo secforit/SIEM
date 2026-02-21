@@ -3,14 +3,6 @@
 # Wazuh Post-Installation
 # ============================================================
 
-- name: Pin Wazuh packages to prevent accidental upgrades
-  ansible.builtin.shell: |
-    echo "wazuh-manager hold" | dpkg --set-selections
-    echo "wazuh-indexer hold" | dpkg --set-selections
-    echo "wazuh-dashboard hold" | dpkg --set-selections
-    echo "filebeat hold" | dpkg --set-selections
-  changed_when: false
-
 - name: Clean up certificate files
   ansible.builtin.file:
     path: "{{ item }}"

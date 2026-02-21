@@ -1,10 +1,9 @@
 ---
 # ============================================================
-# Wazuh 4.14.3 - All-in-One Single Node Deployment
+# Wazuh - All-in-One Single Node Deployment (latest)
 # Optimized for 8GB RAM Hetzner server
 # ============================================================
 
-wazuh_version: "4.14.3"
 wazuh_repo_key_url: "https://packages.wazuh.com/key/GPG-KEY-WAZUH"
 wazuh_repo_url: "https://packages.wazuh.com/4.x/apt/"
 
@@ -28,9 +27,6 @@ wazuh_manager_api_password: "jhJKWHk8BP1OQtGH@xt4al"
 wazuh_dashboard_ip: "127.0.0.1"
 wazuh_dashboard_port: 5601
 
-# --- Filebeat ---
-filebeat_version: "7.10.2"
-
 # --- SSL/TLS Certificates ---
 wazuh_generate_certs: true
 wazuh_certs_dir: "/etc/wazuh-certificates"
@@ -45,6 +41,5 @@ wazuh_manager_syscheck_enabled: true
 wazuh_manager_active_response: true
 
 # --- Memory limits (8GB server optimization) ---
-# Indexer heap 1GB = ~2GB total with overhead (OpenSearch rule: heap <= 50% RAM)
 wazuh_indexer_max_memory: "1g"
 wazuh_manager_max_memory: "512m"

@@ -22,7 +22,7 @@
   loop: "{{ nginx_vhosts }}"
   notify: reload nginx
 
-# Create htpasswd for Prometheus if needed
+# Create htpasswd for Prometheus
 - name: Create htpasswd for Prometheus
   community.general.htpasswd:
     path: /etc/nginx/.htpasswd_prometheus
@@ -31,4 +31,13 @@
     owner: root
     group: www-data
     mode: "0640"
-  when: nginx_vhosts | selectattr('auth_basic', 'defined') | list | length > 0
+
+# Create htpasswd for Wazuh API
+- name: Create htpasswd for Wazuh API
+  community.general.htpasswd:
+    path: /etc/nginx/.htpasswd_wazuh
+    name: admin
+    password: "{{ wazuh_api_password }}"
+    owner: root
+    group: www-data
+    mode: "0640"
