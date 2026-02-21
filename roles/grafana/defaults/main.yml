@@ -1,0 +1,66 @@
+---
+# ============================================================
+# Grafana Configuration
+# ============================================================
+
+grafana_version: "11.4.0"
+grafana_apt_repo: "https://apt.grafana.com"
+grafana_gpg_key: "https://apt.grafana.com/gpg.key"
+
+# Server
+grafana_listen_address: "127.0.0.1"
+grafana_port: 3000
+grafana_domain: "grafana.secforit.ro"
+grafana_root_url: "https://{{ grafana_domain }}/"
+grafana_serve_from_sub_path: false
+
+# Admin
+grafana_admin_user: "admin"
+grafana_admin_password: "CHANGE_ME_grafana_password"
+
+# Security
+grafana_secret_key: "CHANGE_ME_secret_key_32_chars_min"
+grafana_disable_gravatar: true
+grafana_cookie_secure: true
+grafana_cookie_samesite: "strict"
+grafana_strict_transport_security: true
+
+# Auth
+grafana_disable_signup: true
+grafana_auto_assign_org: true
+grafana_auto_assign_org_role: "Viewer"
+
+# Datasources
+grafana_datasources:
+  - name: "Prometheus"
+    type: "prometheus"
+    access: "proxy"
+    url: "http://127.0.0.1:9090"
+    is_default: true
+    editable: false
+
+  - name: "Wazuh Indexer"
+    type: "elasticsearch"
+    access: "proxy"
+    url: "https://127.0.0.1:9200"
+    database: "wazuh-alerts-*"
+    basic_auth: true
+    basic_auth_user: "admin"
+    basic_auth_password: "CHANGE_ME_indexer_admin_password"
+    json_data:
+      esVersion: "7.10.2"
+      timeField: "timestamp"
+      tlsSkipVerify: true
+    editable: false
+
+# Dashboard provisioning
+grafana_dashboards:
+  - name: "Node Exporter Full"
+    gnet_id: 1860
+    revision: 37
+    datasource: "Prometheus"
+
+  - name: "Wazuh Security Events"
+    gnet_id: 18514
+    revision: 1
+    datasource: "Wazuh Indexer"

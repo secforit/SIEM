@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+# Wazuh Dashboard Configuration
+
+server.host: {{ wazuh_dashboard_ip }}
+server.port: {{ wazuh_dashboard_port }}
+opensearch.hosts: ["https://{{ wazuh_indexer_ip }}:{{ wazuh_indexer_port }}"]
+opensearch.ssl.verificationMode: certificate
+opensearch.requestHeadersWhitelist: ["securitytenant", "Authorization"]
+opensearch_security.multitenancy.enabled: false
+opensearch_security.readonly_mode.roles: ["kibana_read_only"]
+server.ssl.enabled: true
+server.ssl.key: "/etc/wazuh-dashboard/certs/dashboard-key.pem"
+server.ssl.certificate: "/etc/wazuh-dashboard/certs/dashboard.pem"
+opensearch.ssl.certificateAuthorities: ["/etc/wazuh-dashboard/certs/root-ca.pem"]
+opensearch.password: "{{ wazuh_indexer_admin_password }}"
+opensearch.username: admin
+uiSettings.overrides.defaultRoute: /app/wz-home

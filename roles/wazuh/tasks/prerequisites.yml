@@ -1,0 +1,56 @@
+---
+# ============================================================
+# Wazuh Prerequisites
+# ============================================================
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - debconf
+      - debhelper
+      - tar
+      - gzip
+    state: present
+
+- name: Add Wazuh GPG key
+  ansible.builtin.apt_key:
+    url: "{{ wazuh_repo_key_url }}"
+    state: present
+
+- name: Add Wazuh repository
+  ansible.builtin.apt_repository:
+    repo: "deb {{ wazuh_repo_url }} stable main"
+    state: present
+    filename: wazuh
+    update_cache: true
+
+- name: Set system limits for Wazuh
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    line: "{{ item }}"
+    insertbefore: "^# End of file"
+  loop:
+    - "wazuh soft nofile 65536"
+    - "wazuh hard nofile 65536"
+    - "wazuh-indexer soft nofile 65536"
+    - "wazuh-indexer hard nofile 65536"
+    - "wazuh-indexer soft memlock unlimited"
+    - "wazuh-indexer hard memlock unlimited"
+
+- name: Set vm.max_map_count for Wazuh Indexer
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    sysctl_set: true
+    state: present
+    reload: true

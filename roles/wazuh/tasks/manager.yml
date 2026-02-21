@@ -1,0 +1,33 @@
+---
+# ============================================================
+# Wazuh Manager Installation
+# ============================================================
+
+- name: Install Wazuh Manager
+  ansible.builtin.apt:
+    name: "wazuh-manager={{ wazuh_version }}-*"
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Configure Wazuh Manager (ossec.conf)
+  ansible.builtin.template:
+    src: ossec.conf.j2
+    dest: /var/ossec/etc/ossec.conf
+    owner: root
+    group: wazuh
+    mode: "0660"
+  notify: restart wazuh-manager
+
+- name: Enable and start Wazuh Manager
+  ansible.builtin.systemd:
+    name: wazuh-manager
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Wait for Wazuh Manager to be ready
+  ansible.builtin.wait_for:
+    port: "{{ wazuh_manager_port }}"
+    delay: 5
+    timeout: 90

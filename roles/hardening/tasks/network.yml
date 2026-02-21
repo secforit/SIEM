@@ -1,0 +1,162 @@
+---
+# ============================================================
+# CIS 3.x - Network Configuration
+# ============================================================
+
+# --- 3.1 Network Parameters (Host Only) ---
+- name: "CIS 3.1.1 | Ensure IP forwarding is disabled"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "0"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
+
+- name: "CIS 3.1.2 | Ensure packet redirect sending is disabled"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "0"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.conf.all.send_redirects
+    - net.ipv4.conf.default.send_redirects
+
+# --- 3.2 Network Parameters (Host and Router) ---
+- name: "CIS 3.2.1 | Ensure source routed packets are not accepted"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "0"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.conf.all.accept_source_route
+    - net.ipv4.conf.default.accept_source_route
+    - net.ipv6.conf.all.accept_source_route
+    - net.ipv6.conf.default.accept_source_route
+
+- name: "CIS 3.2.2 | Ensure ICMP redirects are not accepted"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "0"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.conf.all.accept_redirects
+    - net.ipv4.conf.default.accept_redirects
+    - net.ipv6.conf.all.accept_redirects
+    - net.ipv6.conf.default.accept_redirects
+
+- name: "CIS 3.2.3 | Ensure secure ICMP redirects are not accepted"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "0"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.conf.all.secure_redirects
+    - net.ipv4.conf.default.secure_redirects
+
+- name: "CIS 3.2.4 | Ensure suspicious packets are logged"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.conf.all.log_martians
+    - net.ipv4.conf.default.log_martians
+
+- name: "CIS 3.2.5 | Ensure broadcast ICMP requests are ignored"
+  ansible.posix.sysctl:
+    name: net.ipv4.icmp_echo_ignore_broadcasts
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: "CIS 3.2.6 | Ensure bogus ICMP responses are ignored"
+  ansible.posix.sysctl:
+    name: net.ipv4.icmp_ignore_bogus_error_responses
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: "CIS 3.2.7 | Ensure Reverse Path Filtering is enabled"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.conf.all.rp_filter
+    - net.ipv4.conf.default.rp_filter
+
+- name: "CIS 3.2.8 | Ensure TCP SYN Cookies is enabled"
+  ansible.posix.sysctl:
+    name: net.ipv4.tcp_syncookies
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+  when: cis_enable_tcp_syncookies
+
+# --- 3.3 Disable IPv6 (optional) ---
+- name: "CIS 3.3 | Disable IPv6 if required"
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - net.ipv6.conf.all.disable_ipv6
+    - net.ipv6.conf.default.disable_ipv6
+    - net.ipv6.conf.lo.disable_ipv6
+  when: cis_disable_ipv6
+
+# --- 3.4 Firewall (UFW) ---
+- name: "CIS 3.4.1 | Ensure UFW is installed"
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+- name: "CIS 3.4.2 | Set UFW default policies"
+  community.general.ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: "incoming", policy: "{{ ufw_default_incoming }}" }
+    - { direction: "outgoing", policy: "{{ ufw_default_outgoing }}" }
+
+- name: "CIS 3.4.3 | Allow configured ports through UFW"
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+    comment: "{{ item.comment }}"
+  loop: "{{ ufw_allowed_ports }}"
+
+- name: "CIS 3.4.4 | Enable UFW"
+  community.general.ufw:
+    state: enabled
+
+# --- 3.5 Disable wireless interfaces ---
+- name: "CIS 3.5 | Disable wireless interfaces"
+  ansible.builtin.shell: |
+    for iface in $(iw dev 2>/dev/null | awk '$1=="Interface"{print $2}'); do
+      ip link set "$iface" down
+    done
+  changed_when: false
+  failed_when: false
+  when: cis_disable_wireless

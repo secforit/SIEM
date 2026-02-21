@@ -1,0 +1,37 @@
+---
+# ============================================================
+# Wazuh Certificate Generation
+# ============================================================
+
+- name: Create certificates directory
+  ansible.builtin.file:
+    path: "{{ wazuh_certs_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0500"
+
+- name: Download Wazuh cert tool
+  ansible.builtin.get_url:
+    url: "https://packages.wazuh.com/{{ wazuh_version | regex_replace('^(\\d+\\.\\d+).*', '\\1') }}/wazuh-certs-tool.sh"
+    dest: /tmp/wazuh-certs-tool.sh
+    mode: "0700"
+
+- name: Create certificate config file
+  ansible.builtin.template:
+    src: wazuh-cert-config.yml.j2
+    dest: /tmp/config.yml
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Generate Wazuh certificates
+  ansible.builtin.command:
+    cmd: /tmp/wazuh-certs-tool.sh -A
+    chdir: /tmp
+    creates: /tmp/wazuh-certificates/admin.pem
+
+- name: Compress certificates
+  ansible.builtin.command:
+    cmd: tar -czf /tmp/wazuh-certificates.tar.gz -C /tmp wazuh-certificates/
+    creates: /tmp/wazuh-certificates.tar.gz

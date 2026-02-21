@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+groups:
+  - name: siem_platform_alerts
+    rules:
+{% for rule in prometheus_alert_rules %}
+      - alert: {{ rule.alert }}
+        expr: '{{ rule.expr }}'
+        for: {{ rule.for }}
+        labels:
+{% for key, value in rule.labels.items() %}
+          {{ key }}: {{ value }}
+{% endfor %}
+        annotations:
+{% for key, value in rule.annotations.items() %}
+          {{ key }}: "{{ value }}"
+{% endfor %}
+
+{% endfor %}

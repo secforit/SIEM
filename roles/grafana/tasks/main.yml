@@ -1,0 +1,20 @@
+---
+# ============================================================
+# Grafana Deployment
+# ============================================================
+
+- name: Display Grafana deployment start
+  ansible.builtin.debug:
+    msg: "Deploying Grafana {{ grafana_version }}"
+
+- name: Include Grafana installation
+  ansible.builtin.include_tasks: install.yml
+
+- name: Include Grafana configuration
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Include datasource provisioning
+  ansible.builtin.include_tasks: datasources.yml
+
+- name: Include dashboard provisioning
+  ansible.builtin.include_tasks: dashboards.yml

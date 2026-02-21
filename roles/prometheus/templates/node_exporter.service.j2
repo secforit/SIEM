@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Prometheus Node Exporter
+Documentation=https://github.com/prometheus/node_exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=node_exporter
+Group=prometheus
+ExecStart=/usr/local/bin/node_exporter \
+  --web.listen-address={{ node_exporter_listen_address }} \
+{% for collector in node_exporter_enabled_collectors %}
+  --collector.{{ collector }} \
+{% endfor %}
+  --collector.textfile.directory=/var/lib/node_exporter/textfile_collector
+
+SyslogIdentifier=node_exporter
+Restart=always
+RestartSec=5
+
+ProtectHome=yes
+ProtectSystem=full
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

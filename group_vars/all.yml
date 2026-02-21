@@ -1,0 +1,80 @@
+---
+# ============================================================
+# Global Variables - SecForIT SIEM Platform
+# ============================================================
+
+# --- Domain & Network ---
+domain_name: "secforit.ro"
+siem_subdomain: "siem.{{ domain_name }}"
+grafana_subdomain: "grafana.{{ domain_name }}"
+prometheus_subdomain: "prometheus.{{ domain_name }}"
+wazuh_subdomain: "wazuh.{{ domain_name }}"
+
+certbot_email: "admin@{{ domain_name }}"
+certbot_auto_renew: true
+
+# --- Ubuntu Version ---
+ubuntu_version: "24.04"  # or "22.04"
+
+# --- SSH Hardening ---
+ssh_port: 22
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+ssh_max_auth_tries: 3
+ssh_client_alive_interval: 300
+ssh_client_alive_count_max: 2
+ssh_allowed_users: "deploy"
+
+# --- Firewall (UFW) ---
+ufw_default_incoming: "deny"
+ufw_default_outgoing: "allow"
+ufw_allowed_ports:
+  - { port: "{{ ssh_port }}", proto: "tcp", comment: "SSH" }
+  - { port: "80", proto: "tcp", comment: "HTTP" }
+  - { port: "443", proto: "tcp", comment: "HTTPS" }
+  - { port: "1514", proto: "tcp", comment: "Wazuh Agent" }
+  - { port: "1515", proto: "tcp", comment: "Wazuh Registration" }
+  - { port: "55000", proto: "tcp", comment: "Wazuh API" }
+  - { port: "9200", proto: "tcp", comment: "Wazuh Indexer" }
+  - { port: "9090", proto: "tcp", comment: "Prometheus" }
+  - { port: "3000", proto: "tcp", comment: "Grafana" }
+
+# --- Wazuh 4.14.3 ---
+wazuh_version: "4.14.3"
+wazuh_manager_ip: "127.0.0.1"
+wazuh_indexer_ip: "127.0.0.1"
+wazuh_dashboard_ip: "127.0.0.1"
+wazuh_api_user: "wazuh-wui"
+wazuh_api_password: "CHANGE_ME_wazuh_api_password"
+wazuh_indexer_admin_password: "CHANGE_ME_indexer_admin_password"
+
+# --- Prometheus ---
+prometheus_version: "2.54.1"  # Latest stable as of Feb 2026
+prometheus_retention_time: "30d"
+prometheus_retention_size: "10GB"
+prometheus_listen_address: "127.0.0.1:9090"
+
+node_exporter_version: "1.8.2"
+node_exporter_listen_address: "127.0.0.1:9100"
+
+# --- Grafana ---
+grafana_version: "11.4.0"  # Latest stable
+grafana_admin_user: "admin"
+grafana_admin_password: "CHANGE_ME_grafana_password"
+grafana_listen_address: "127.0.0.1"
+grafana_port: 3000
+grafana_domain: "{{ grafana_subdomain }}"
+
+# --- Nginx Reverse Proxy ---
+nginx_worker_processes: "auto"
+nginx_worker_connections: 1024
+
+# --- Fail2Ban ---
+fail2ban_maxretry: 5
+fail2ban_bantime: 3600
+fail2ban_findtime: 600
+
+# --- Audit ---
+auditd_max_log_file: 50
+auditd_num_logs: 10
+auditd_max_log_file_action: "rotate"

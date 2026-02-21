@@ -1,0 +1,23 @@
+---
+# ============================================================
+# Nginx Reverse Proxy + Let's Encrypt
+# ============================================================
+
+- name: Display Nginx proxy deployment start
+  ansible.builtin.debug:
+    msg: "Deploying Nginx reverse proxy with Let's Encrypt for {{ domain_name }}"
+
+- name: Include Nginx installation
+  ansible.builtin.include_tasks: install.yml
+
+- name: Include SSL/TLS configuration
+  ansible.builtin.include_tasks: ssl.yml
+
+- name: Include virtual host configuration
+  ansible.builtin.include_tasks: vhosts.yml
+
+- name: Include Certbot / Let's Encrypt
+  ansible.builtin.include_tasks: certbot.yml
+
+- name: Include security hardening
+  ansible.builtin.include_tasks: security.yml

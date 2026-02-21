@@ -1,0 +1,32 @@
+---
+# ============================================================
+# Grafana Configuration
+# ============================================================
+
+- name: Configure Grafana
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: restart grafana
+
+- name: Create provisioning directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: "0755"
+  loop:
+    - /etc/grafana/provisioning/datasources
+    - /etc/grafana/provisioning/dashboards
+    - /var/lib/grafana/dashboards
+
+- name: Enable and start Grafana
+  ansible.builtin.systemd:
+    name: grafana-server
+    state: started
+    enabled: true
+    daemon_reload: true

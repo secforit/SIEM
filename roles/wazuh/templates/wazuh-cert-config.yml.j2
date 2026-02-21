@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+nodes:
+  indexer:
+    - name: {{ wazuh_indexer_node_name }}
+      ip: "{{ wazuh_indexer_ip }}"
+
+  server:
+    - name: wazuh-1
+      ip: "{{ wazuh_manager_ip }}"
+
+  dashboard:
+    - name: dashboard
+      ip: "{{ wazuh_dashboard_ip }}"

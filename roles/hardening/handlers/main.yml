@@ -1,0 +1,23 @@
+---
+- name: restart sshd
+  ansible.builtin.systemd:
+    name: sshd
+    state: restarted
+
+- name: restart auditd
+  ansible.builtin.command: service auditd restart
+  changed_when: true
+
+- name: restart rsyslog
+  ansible.builtin.systemd:
+    name: rsyslog
+    state: restarted
+
+- name: restart fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted
+
+- name: update grub
+  ansible.builtin.command: update-grub
+  changed_when: true

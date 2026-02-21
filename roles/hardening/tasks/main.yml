@@ -1,0 +1,40 @@
+---
+# ============================================================
+# CIS Ubuntu Linux LTS Benchmark - Level 1 Hardening
+# ============================================================
+
+- name: Display hardening start message
+  ansible.builtin.debug:
+    msg: "Starting CIS Level 1 hardening on {{ ansible_hostname }}"
+
+- name: Include filesystem hardening
+  ansible.builtin.include_tasks: filesystem.yml
+  when: cis_section1_initial_setup
+
+- name: Include service hardening
+  ansible.builtin.include_tasks: services.yml
+  when: cis_section2_services
+
+- name: Include network hardening
+  ansible.builtin.include_tasks: network.yml
+  when: cis_section3_network
+
+- name: Include logging and auditing
+  ansible.builtin.include_tasks: logging.yml
+  when: cis_section4_logging
+
+- name: Include access and authentication hardening
+  ansible.builtin.include_tasks: access.yml
+  when: cis_section5_access
+
+- name: Include system maintenance
+  ansible.builtin.include_tasks: maintenance.yml
+  when: cis_section6_maintenance
+
+- name: Include fail2ban setup
+  ansible.builtin.include_tasks: fail2ban.yml
+  when: install_fail2ban
+
+- name: Include unattended upgrades
+  ansible.builtin.include_tasks: unattended_upgrades.yml
+  when: install_unattended_upgrades

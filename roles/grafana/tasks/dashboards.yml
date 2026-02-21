@@ -1,0 +1,41 @@
+---
+# ============================================================
+# Grafana Dashboard Provisioning
+# ============================================================
+
+- name: Create dashboard provisioning config
+  ansible.builtin.template:
+    src: dashboard_provider.yml.j2
+    dest: /etc/grafana/provisioning/dashboards/ansible.yml
+    owner: grafana
+    group: grafana
+    mode: "0640"
+  notify: restart grafana
+
+- name: Wait for Grafana to be ready
+  ansible.builtin.wait_for:
+    port: "{{ grafana_port }}"
+    delay: 5
+    timeout: 60
+
+- name: Download Grafana dashboards from grafana.com
+  ansible.builtin.uri:
+    url: "https://grafana.com/api/dashboards/{{ item.gnet_id }}/revisions/{{ item.revision }}/download"
+    method: GET
+    return_content: true
+    headers:
+      Accept: "application/json"
+  register: dashboard_downloads
+  loop: "{{ grafana_dashboards }}"
+  failed_when: false
+
+- name: Save downloaded dashboards
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "/var/lib/grafana/dashboards/{{ item.item.name | regex_replace(' ', '_') | lower }}.json"
+    owner: grafana
+    group: grafana
+    mode: "0644"
+  loop: "{{ dashboard_downloads.results }}"
+  when: item.status == 200
+  notify: restart grafana

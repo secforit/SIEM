@@ -1,0 +1,30 @@
+---
+# ============================================================
+# Wazuh 4.14.3 All-in-One Deployment
+# ============================================================
+
+- name: Display Wazuh deployment start
+  ansible.builtin.debug:
+    msg: "Deploying Wazuh {{ wazuh_version }} All-in-One on {{ ansible_hostname }}"
+
+- name: Include prerequisites
+  ansible.builtin.include_tasks: prerequisites.yml
+
+- name: Include certificate generation
+  ansible.builtin.include_tasks: certificates.yml
+  when: wazuh_generate_certs
+
+- name: Include Wazuh Indexer installation
+  ansible.builtin.include_tasks: indexer.yml
+
+- name: Include Wazuh Manager installation
+  ansible.builtin.include_tasks: manager.yml
+
+- name: Include Filebeat installation
+  ansible.builtin.include_tasks: filebeat.yml
+
+- name: Include Wazuh Dashboard installation
+  ansible.builtin.include_tasks: dashboard.yml
+
+- name: Include post-installation configuration
+  ansible.builtin.include_tasks: post_install.yml

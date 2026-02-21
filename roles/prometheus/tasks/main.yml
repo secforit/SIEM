@@ -1,0 +1,21 @@
+---
+# ============================================================
+# Prometheus + Node Exporter Deployment
+# Uses binary installation (no Docker dependency)
+# ============================================================
+
+- name: Display Prometheus deployment start
+  ansible.builtin.debug:
+    msg: "Deploying Prometheus {{ prometheus_version }} and Node Exporter {{ node_exporter_version }}"
+
+- name: Include user and directory setup
+  ansible.builtin.include_tasks: setup.yml
+
+- name: Include Prometheus server installation
+  ansible.builtin.include_tasks: prometheus.yml
+
+- name: Include Node Exporter installation
+  ansible.builtin.include_tasks: node_exporter.yml
+
+- name: Include alert rules
+  ansible.builtin.include_tasks: alerts.yml

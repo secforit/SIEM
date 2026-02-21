@@ -1,0 +1,46 @@
+---
+# ============================================================
+# Wazuh Dashboard Installation
+# ============================================================
+
+- name: Install Wazuh Dashboard
+  ansible.builtin.apt:
+    name: "wazuh-dashboard={{ wazuh_version }}-*"
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Configure Wazuh Dashboard
+  ansible.builtin.template:
+    src: opensearch_dashboards.yml.j2
+    dest: /etc/wazuh-dashboard/opensearch_dashboards.yml
+    owner: wazuh-dashboard
+    group: wazuh-dashboard
+    mode: "0660"
+  notify: restart wazuh-dashboard
+
+- name: Deploy Dashboard certificates
+  ansible.builtin.shell: |
+    mkdir -p /etc/wazuh-dashboard/certs
+    tar -xzf /tmp/wazuh-certificates.tar.gz -C /etc/wazuh-dashboard/certs/ \
+      wazuh-certificates/dashboard.pem \
+      wazuh-certificates/dashboard-key.pem \
+      wazuh-certificates/root-ca.pem --strip-components=1
+    chmod 500 /etc/wazuh-dashboard/certs
+    chmod 400 /etc/wazuh-dashboard/certs/*
+    chown -R wazuh-dashboard:wazuh-dashboard /etc/wazuh-dashboard/certs
+  args:
+    creates: /etc/wazuh-dashboard/certs/root-ca.pem
+
+- name: Enable and start Wazuh Dashboard
+  ansible.builtin.systemd:
+    name: wazuh-dashboard
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Wait for Wazuh Dashboard to be ready
+  ansible.builtin.wait_for:
+    port: "{{ wazuh_dashboard_port }}"
+    delay: 15
+    timeout: 120

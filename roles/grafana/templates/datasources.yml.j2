@@ -1,0 +1,36 @@
+# {{ ansible_managed }}
+apiVersion: 1
+
+datasources:
+{% for ds in grafana_datasources %}
+  - name: "{{ ds.name }}"
+    type: "{{ ds.type }}"
+    access: "{{ ds.access }}"
+    url: "{{ ds.url }}"
+{% if ds.is_default is defined %}
+    isDefault: {{ ds.is_default | lower }}
+{% endif %}
+{% if ds.editable is defined %}
+    editable: {{ ds.editable | lower }}
+{% endif %}
+{% if ds.database is defined %}
+    database: "{{ ds.database }}"
+{% endif %}
+{% if ds.basic_auth is defined and ds.basic_auth %}
+    basicAuth: true
+    basicAuthUser: "{{ ds.basic_auth_user }}"
+    secureJsonData:
+      basicAuthPassword: "{{ ds.basic_auth_password }}"
+{% endif %}
+{% if ds.json_data is defined %}
+    jsonData:
+{% for key, value in ds.json_data.items() %}
+{% if value is sameas true or value is sameas false %}
+      {{ key }}: {{ value | lower }}
+{% else %}
+      {{ key }}: "{{ value }}"
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}

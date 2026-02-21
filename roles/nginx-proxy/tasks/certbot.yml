@@ -1,0 +1,58 @@
+---
+# ============================================================
+# Certbot / Let's Encrypt
+# ============================================================
+
+- name: Install Certbot via Snap
+  ansible.builtin.command: snap install --classic certbot
+  args:
+    creates: /snap/bin/certbot
+
+- name: Create certbot symlink
+  ansible.builtin.file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+  failed_when: false
+
+- name: Reload Nginx before cert request
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
+
+- name: Obtain Let's Encrypt certificates for each subdomain
+  ansible.builtin.command: >
+    certbot certonly --webroot
+    --webroot-path /var/www/html
+    --email {{ certbot_email }}
+    --agree-tos
+    --no-eff-email
+    --non-interactive
+    -d {{ item.server_name }}
+  loop: "{{ nginx_vhosts }}"
+  register: certbot_result
+  changed_when: "'Certificate not yet due for renewal' not in certbot_result.stdout"
+  failed_when: false
+
+- name: Deploy HTTPS virtual hosts (post-SSL)
+  ansible.builtin.template:
+    src: vhost-https.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.server_name }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ nginx_vhosts }}"
+  notify: reload nginx
+
+- name: Setup certbot auto-renewal cron
+  ansible.builtin.cron:
+    name: "Certbot renewal"
+    minute: "30"
+    hour: "3"
+    job: "certbot renew --quiet --deploy-hook 'systemctl reload nginx'"
+    user: root
+
+- name: Test certbot renewal
+  ansible.builtin.command: certbot renew --dry-run
+  changed_when: false
+  failed_when: false

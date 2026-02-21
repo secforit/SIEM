@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+# CIS 5.2.1 - Password quality configuration
+
+minlen = {{ cis_password_min_length }}
+dcredit = -1
+ucredit = -1
+ocredit = -1
+lcredit = -1
+minclass = 4
+maxrepeat = 3
+maxclassrepeat = 4
+retry = 3
+enforce_for_root

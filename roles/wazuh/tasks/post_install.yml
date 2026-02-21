@@ -1,0 +1,47 @@
+---
+# ============================================================
+# Wazuh Post-Installation
+# ============================================================
+
+- name: Pin Wazuh packages to prevent accidental upgrades
+  ansible.builtin.shell: |
+    echo "wazuh-manager hold" | dpkg --set-selections
+    echo "wazuh-indexer hold" | dpkg --set-selections
+    echo "wazuh-dashboard hold" | dpkg --set-selections
+    echo "filebeat hold" | dpkg --set-selections
+  changed_when: false
+
+- name: Clean up certificate files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/wazuh-certificates.tar.gz
+    - /tmp/wazuh-certificates
+    - /tmp/wazuh-certs-tool.sh
+    - /tmp/config.yml
+
+- name: Verify Wazuh Manager is running
+  ansible.builtin.command: /var/ossec/bin/wazuh-control status
+  register: wazuh_status
+  changed_when: false
+
+- name: Display Wazuh status
+  ansible.builtin.debug:
+    msg: "{{ wazuh_status.stdout_lines }}"
+
+- name: Verify Wazuh Indexer cluster health
+  ansible.builtin.uri:
+    url: "https://{{ wazuh_indexer_ip }}:{{ wazuh_indexer_port }}/_cluster/health"
+    method: GET
+    user: admin
+    password: "{{ wazuh_indexer_admin_password }}"
+    validate_certs: false
+    return_content: true
+  register: cluster_health
+  failed_when: false
+
+- name: Display cluster health
+  ansible.builtin.debug:
+    msg: "Indexer cluster status: {{ cluster_health.json.status | default('unknown') }}"
+  when: cluster_health.json is defined

@@ -1,0 +1,42 @@
+# {{ ansible_managed }}
+# CIS 1.1.1.x - Disable unused filesystem types
+
+{% if cis_disable_cramfs %}
+install cramfs /bin/true
+blacklist cramfs
+{% endif %}
+
+{% if cis_disable_freevxfs %}
+install freevxfs /bin/true
+blacklist freevxfs
+{% endif %}
+
+{% if cis_disable_jffs2 %}
+install jffs2 /bin/true
+blacklist jffs2
+{% endif %}
+
+{% if cis_disable_hfs %}
+install hfs /bin/true
+blacklist hfs
+{% endif %}
+
+{% if cis_disable_hfsplus %}
+install hfsplus /bin/true
+blacklist hfsplus
+{% endif %}
+
+{% if cis_disable_squashfs %}
+install squashfs /bin/true
+blacklist squashfs
+{% endif %}
+
+{% if cis_disable_udf %}
+install udf /bin/true
+blacklist udf
+{% endif %}
+
+{% if cis_disable_usb_storage %}
+install usb-storage /bin/true
+blacklist usb-storage
+{% endif %}

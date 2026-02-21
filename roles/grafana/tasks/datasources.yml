@@ -1,0 +1,13 @@
+---
+# ============================================================
+# Grafana Datasource Provisioning
+# ============================================================
+
+- name: Provision Grafana datasources
+  ansible.builtin.template:
+    src: datasources.yml.j2
+    dest: /etc/grafana/provisioning/datasources/ansible.yml
+    owner: grafana
+    group: grafana
+    mode: "0640"
+  notify: restart grafana

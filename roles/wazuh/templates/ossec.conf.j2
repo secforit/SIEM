@@ -1,0 +1,178 @@
+<!-- {{ ansible_managed }} -->
+<ossec_config>
+
+  <!-- Global -->
+  <global>
+    <jsonout_output>yes</jsonout_output>
+    <alerts_log>yes</alerts_log>
+    <logall>no</logall>
+    <logall_json>no</logall_json>
+    <email_notification>{{ wazuh_manager_email_notification }}</email_notification>
+    <log_level>{{ wazuh_manager_log_level }}</log_level>
+  </global>
+
+  <!-- Alerts -->
+  <alerts>
+    <log_alert_level>3</log_alert_level>
+    <email_alert_level>12</email_alert_level>
+  </alerts>
+
+  <!-- Logging -->
+  <logging>
+    <log_format>plain</log_format>
+  </logging>
+
+  <!-- Remote -->
+  <remote>
+    <connection>secure</connection>
+    <port>{{ wazuh_manager_port }}</port>
+    <protocol>tcp</protocol>
+    <queue_size>131072</queue_size>
+  </remote>
+
+  <!-- Auth -->
+  <auth>
+    <disabled>no</disabled>
+    <port>{{ wazuh_manager_registration_port }}</port>
+    <use_source_ip>yes</use_source_ip>
+    <purge>yes</purge>
+    <use_password>no</use_password>
+    <ssl_verify_host>no</ssl_verify_host>
+    <ssl_manager_cert>/var/ossec/etc/sslmanager.cert</ssl_manager_cert>
+    <ssl_manager_key>/var/ossec/etc/sslmanager.key</ssl_manager_key>
+    <ssl_auto_negotiate>no</ssl_auto_negotiate>
+  </auth>
+
+{% if wazuh_manager_rootcheck_enabled %}
+  <!-- Policy monitoring (Rootcheck) -->
+  <rootcheck>
+    <disabled>no</disabled>
+    <check_files>yes</check_files>
+    <check_trojans>yes</check_trojans>
+    <check_dev>yes</check_dev>
+    <check_sys>yes</check_sys>
+    <check_pids>yes</check_pids>
+    <check_ports>yes</check_ports>
+    <check_if>yes</check_if>
+    <frequency>43200</frequency>
+    <rootkit_files>etc/shared/rootkit_files.txt</rootkit_files>
+    <rootkit_trojans>etc/shared/rootkit_trojans.txt</rootkit_trojans>
+  </rootcheck>
+{% endif %}
+
+{% if wazuh_manager_syscheck_enabled %}
+  <!-- File integrity monitoring -->
+  <syscheck>
+    <disabled>no</disabled>
+    <frequency>43200</frequency>
+    <scan_on_start>yes</scan_on_start>
+    <alert_new_files>yes</alert_new_files>
+
+    <directories realtime="yes" check_all="yes">/etc,/usr/bin,/usr/sbin</directories>
+    <directories realtime="yes" check_all="yes">/bin,/sbin,/boot</directories>
+    <directories check_all="yes">/var/ossec/etc</directories>
+
+    <ignore>/etc/mtab</ignore>
+    <ignore>/etc/hosts.deny</ignore>
+    <ignore>/etc/mail/statistics</ignore>
+    <ignore>/etc/random-seed</ignore>
+    <ignore>/etc/random.seed</ignore>
+    <ignore>/etc/adjtime</ignore>
+    <ignore>/etc/httpd/logs</ignore>
+    <ignore>/etc/utmpx</ignore>
+    <ignore>/etc/wtmpx</ignore>
+    <ignore>/etc/cups/certs</ignore>
+    <ignore>/etc/dumpdates</ignore>
+    <ignore>/etc/svc/volatile</ignore>
+
+    <no_diff>/etc/ssl/private.key</no_diff>
+    <skip_nfs>yes</skip_nfs>
+    <skip_dev>yes</skip_dev>
+    <skip_proc>yes</skip_proc>
+    <skip_sys>yes</skip_sys>
+  </syscheck>
+{% endif %}
+
+{% if wazuh_manager_vulnerability_detection %}
+  <!-- Vulnerability detection -->
+  <vulnerability-detection>
+    <enabled>yes</enabled>
+    <index-status>yes</index-status>
+    <feed-update-interval>60m</feed-update-interval>
+  </vulnerability-detection>
+{% endif %}
+
+{% if wazuh_manager_sca_enabled %}
+  <!-- Security Configuration Assessment -->
+  <sca>
+    <enabled>yes</enabled>
+    <scan_on_start>yes</scan_on_start>
+    <interval>12h</interval>
+    <skip_nfs>yes</skip_nfs>
+  </sca>
+{% endif %}
+
+{% if wazuh_manager_active_response %}
+  <!-- Active response -->
+  <active-response>
+    <ca_store>etc/wpk_root.pem</ca_store>
+  </active-response>
+
+  <command>
+    <name>firewall-drop</name>
+    <executable>firewall-drop</executable>
+    <timeout_allowed>yes</timeout_allowed>
+  </command>
+
+  <active-response>
+    <command>firewall-drop</command>
+    <location>local</location>
+    <rules_id>5763</rules_id>
+    <timeout>600</timeout>
+  </active-response>
+{% endif %}
+
+  <!-- Log analysis -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/dpkg.log</location>
+  </localfile>
+
+  <localfile>
+    <log_format>audit</log_format>
+    <location>/var/log/audit/audit.log</location>
+  </localfile>
+
+  <!-- API -->
+  <api>
+    <bind_addr>0.0.0.0</bind_addr>
+    <port>{{ wazuh_manager_api_port }}</port>
+    <https>yes</https>
+  </api>
+
+  <!-- Cluster (single-node) -->
+  <cluster>
+    <name>wazuh</name>
+    <node_name>node01</node_name>
+    <node_type>master</node_type>
+    <key>CHANGE_ME_CLUSTER_KEY_32_CHARS</key>
+    <port>1516</port>
+    <bind_addr>0.0.0.0</bind_addr>
+    <nodes>
+      <node>{{ wazuh_manager_ip }}</node>
+    </nodes>
+    <hidden>no</hidden>
+    <disabled>yes</disabled>
+  </cluster>
+
+</ossec_config>

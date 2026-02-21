@@ -1,0 +1,46 @@
+# {{ ansible_managed }}
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+rule_files:
+  - "rules/*.yml"
+
+{% if alertmanager_enabled %}
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["127.0.0.1:9093"]
+{% endif %}
+
+scrape_configs:
+{% for job in prometheus_scrape_configs %}
+  - job_name: "{{ job.job_name }}"
+{% if job.metrics_path is defined %}
+    metrics_path: "{{ job.metrics_path }}"
+{% endif %}
+{% if job.scheme is defined %}
+    scheme: "{{ job.scheme }}"
+{% endif %}
+{% if job.tls_config is defined %}
+    tls_config:
+      insecure_skip_verify: {{ job.tls_config.insecure_skip_verify | lower }}
+{% endif %}
+{% if job.basic_auth is defined %}
+    basic_auth:
+      username: "{{ job.basic_auth.username }}"
+      password: "{{ job.basic_auth.password }}"
+{% endif %}
+    static_configs:
+{% for sc in job.static_configs %}
+      - targets: {{ sc.targets | to_json }}
+{% if sc.labels is defined %}
+        labels:
+{% for key, value in sc.labels.items() %}
+          {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+{% endfor %}

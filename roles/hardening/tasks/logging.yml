@@ -1,0 +1,62 @@
+---
+# ============================================================
+# CIS 4.x - Logging and Auditing
+# ============================================================
+
+# --- 4.1 Configure auditd ---
+- name: "CIS 4.1.1 | Ensure auditd is installed"
+  ansible.builtin.apt:
+    name:
+      - auditd
+      - audispd-plugins
+    state: present
+
+- name: "CIS 4.1.2 | Ensure auditd service is running"
+  ansible.builtin.systemd:
+    name: auditd
+    state: started
+    enabled: true
+
+- name: "CIS 4.1.3 | Configure auditd"
+  ansible.builtin.template:
+    src: auditd.conf.j2
+    dest: /etc/audit/auditd.conf
+    owner: root
+    group: root
+    mode: "0640"
+  notify: restart auditd
+
+- name: "CIS 4.1.4 | Configure audit rules"
+  ansible.builtin.template:
+    src: audit.rules.j2
+    dest: /etc/audit/rules.d/cis-hardening.rules
+    owner: root
+    group: root
+    mode: "0640"
+  notify: restart auditd
+
+# --- 4.2 Configure rsyslog ---
+- name: "CIS 4.2.1 | Ensure rsyslog is installed"
+  ansible.builtin.apt:
+    name: rsyslog
+    state: present
+
+- name: "CIS 4.2.2 | Ensure rsyslog is running"
+  ansible.builtin.systemd:
+    name: rsyslog
+    state: started
+    enabled: true
+
+- name: "CIS 4.2.3 | Ensure rsyslog default file permissions"
+  ansible.builtin.lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: '^\$FileCreateMode'
+    line: "$FileCreateMode 0640"
+  notify: restart rsyslog
+
+# --- 4.3 Ensure logrotate is configured ---
+- name: "CIS 4.3 | Configure logrotate"
+  ansible.builtin.lineinfile:
+    path: /etc/logrotate.conf
+    regexp: "^rotate"
+    line: "rotate {{ cis_log_retention_days // 7 }}"

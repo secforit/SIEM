@@ -1,0 +1,99 @@
+---
+# ============================================================
+# Prometheus + Node Exporter Configuration
+# Uses prometheus.prometheus collection roles
+# ============================================================
+
+# --- Prometheus Server ---
+prometheus_version: "2.54.1"
+prometheus_listen_address: "127.0.0.1:9090"
+prometheus_storage_retention: "30d"
+prometheus_storage_retention_size: "10GB"
+prometheus_data_dir: "/var/lib/prometheus"
+prometheus_config_dir: "/etc/prometheus"
+
+prometheus_web_external_url: "https://prometheus.secforit.ro"
+
+# --- Node Exporter ---
+node_exporter_version: "1.8.2"
+node_exporter_listen_address: "127.0.0.1:9100"
+node_exporter_enabled_collectors:
+  - systemd
+  - processes
+  - tcpstat
+  - filesystem
+  - diskstats
+  - netstat
+  - meminfo
+  - cpu
+
+# --- Alertmanager (optional) ---
+alertmanager_enabled: false
+alertmanager_version: "0.27.0"
+
+# --- Scrape targets ---
+prometheus_scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["127.0.0.1:9090"]
+
+  - job_name: "node_exporter"
+    static_configs:
+      - targets: ["127.0.0.1:9100"]
+        labels:
+          instance: "siem-server"
+
+  - job_name: "wazuh_api"
+    metrics_path: "/metrics"
+    scheme: "https"
+    tls_config:
+      insecure_skip_verify: true
+    basic_auth:
+      username: "wazuh-wui"
+      password: "CHANGE_ME_wazuh_api_password"
+    static_configs:
+      - targets: ["127.0.0.1:55000"]
+        labels:
+          instance: "wazuh-manager"
+
+# --- Alert rules ---
+prometheus_alert_rules:
+  - alert: HighCPUUsage
+    expr: "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100) > 85"
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage on {{ '{{ $labels.instance }}' }}"
+
+  - alert: HighMemoryUsage
+    expr: "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90"
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "High memory usage on {{ '{{ $labels.instance }}' }}"
+
+  - alert: DiskSpaceLow
+    expr: "(node_filesystem_avail_bytes{mountpoint='/'} / node_filesystem_size_bytes{mountpoint='/'}) * 100 < 15"
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Disk space low on {{ '{{ $labels.instance }}' }}"
+
+  - alert: WazuhManagerDown
+    expr: "up{job='wazuh_api'} == 0"
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Wazuh Manager is down"
+
+  - alert: HighSystemLoad
+    expr: "node_load15 > (count without (cpu, mode) (node_cpu_seconds_total{mode='idle'})) * 0.8"
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High system load on {{ '{{ $labels.instance }}' }}"

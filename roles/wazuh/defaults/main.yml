@@ -1,0 +1,48 @@
+---
+# ============================================================
+# Wazuh 4.14.3 - All-in-One Single Node Deployment
+# ============================================================
+
+wazuh_version: "4.14.3"
+wazuh_repo_key_url: "https://packages.wazuh.com/key/GPG-KEY-WAZUH"
+wazuh_repo_url: "https://packages.wazuh.com/4.x/apt/"
+
+# --- Wazuh Indexer (OpenSearch-based) ---
+wazuh_indexer_cluster_name: "wazuh-cluster"
+wazuh_indexer_node_name: "node-1"
+wazuh_indexer_ip: "127.0.0.1"
+wazuh_indexer_port: 9200
+wazuh_indexer_java_heap: "1g"
+wazuh_indexer_admin_password: "CHANGE_ME_indexer_admin_password"
+
+# --- Wazuh Manager ---
+wazuh_manager_ip: "127.0.0.1"
+wazuh_manager_port: 1514
+wazuh_manager_registration_port: 1515
+wazuh_manager_api_port: 55000
+wazuh_manager_api_user: "wazuh-wui"
+wazuh_manager_api_password: "CHANGE_ME_wazuh_api_password"
+
+# --- Wazuh Dashboard ---
+wazuh_dashboard_ip: "127.0.0.1"
+wazuh_dashboard_port: 5601
+
+# --- Filebeat ---
+filebeat_version: "7.10.2"
+
+# --- SSL/TLS Certificates ---
+wazuh_generate_certs: true
+wazuh_certs_dir: "/etc/wazuh-certificates"
+
+# --- Manager Configuration ---
+wazuh_manager_log_level: 1
+wazuh_manager_email_notification: "no"
+wazuh_manager_vulnerability_detection: true
+wazuh_manager_sca_enabled: true
+wazuh_manager_rootcheck_enabled: true
+wazuh_manager_syscheck_enabled: true
+wazuh_manager_active_response: true
+
+# --- Memory limits (single-node optimization) ---
+wazuh_indexer_max_memory: "2g"
+wazuh_manager_max_memory: "1g"

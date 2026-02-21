@@ -1,0 +1,53 @@
+# {{ ansible_managed }}
+
+[server]
+http_addr = {{ grafana_listen_address }}
+http_port = {{ grafana_port }}
+domain = {{ grafana_domain }}
+root_url = {{ grafana_root_url }}
+serve_from_sub_path = {{ grafana_serve_from_sub_path | lower }}
+protocol = http
+
+[security]
+admin_user = {{ grafana_admin_user }}
+admin_password = {{ grafana_admin_password }}
+secret_key = {{ grafana_secret_key }}
+disable_gravatar = {{ grafana_disable_gravatar | lower }}
+cookie_secure = {{ grafana_cookie_secure | lower }}
+cookie_samesite = {{ grafana_cookie_samesite }}
+strict_transport_security = {{ grafana_strict_transport_security | lower }}
+strict_transport_security_max_age_seconds = 31536000
+strict_transport_security_preload = true
+content_security_policy = true
+x_content_type_options = true
+x_xss_protection = true
+
+[users]
+allow_sign_up = {{ (not grafana_disable_signup) | lower }}
+auto_assign_org = {{ grafana_auto_assign_org | lower }}
+auto_assign_org_role = {{ grafana_auto_assign_org_role }}
+
+[auth.anonymous]
+enabled = false
+
+[analytics]
+reporting_enabled = false
+check_for_updates = false
+check_for_plugin_updates = false
+
+[log]
+mode = file
+level = info
+
+[log.file]
+daily_rotate = true
+max_days = 30
+
+[dashboards]
+default_home_dashboard_path = /var/lib/grafana/dashboards/node_exporter_full.json
+
+[alerting]
+enabled = true
+
+[unified_alerting]
+enabled = true

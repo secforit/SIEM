@@ -1,0 +1,30 @@
+---
+# ============================================================
+# Nginx Security Hardening
+# ============================================================
+
+- name: Disable Nginx version disclosure
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: '^\s*#?\s*server_tokens'
+    line: "    server_tokens off;"
+    insertafter: "http {"
+  notify: reload nginx
+
+- name: Deploy IP blocklist (empty by default)
+  ansible.builtin.copy:
+    content: |
+      # {{ ansible_managed }}
+      # Add blocked IPs here, one per line:
+      # deny 1.2.3.4;
+      # deny 5.6.7.0/24;
+    dest: /etc/nginx/conf.d/blocklist.conf
+    owner: root
+    group: root
+    mode: "0644"
+    force: false  # Don't overwrite existing blocklist
+  notify: reload nginx
+
+- name: Validate full Nginx configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false

@@ -1,0 +1,31 @@
+---
+# ============================================================
+# Grafana Installation
+# ============================================================
+
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - software-properties-common
+      - wget
+    state: present
+
+- name: Add Grafana GPG key
+  ansible.builtin.apt_key:
+    url: "{{ grafana_gpg_key }}"
+    state: present
+
+- name: Add Grafana repository
+  ansible.builtin.apt_repository:
+    repo: "deb {{ grafana_apt_repo }} stable main"
+    state: present
+    filename: grafana
+    update_cache: true
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: "grafana={{ grafana_version }}"
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive

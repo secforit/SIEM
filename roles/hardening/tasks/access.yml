@@ -1,0 +1,75 @@
+---
+# ============================================================
+# CIS 5.x - Access, Authentication, and Authorization
+# ============================================================
+
+# --- 5.1 Configure SSH Server ---
+- name: "CIS 5.1 | Harden SSH configuration"
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0600"
+    validate: "sshd -t -f %s"
+  notify: restart sshd
+
+- name: "CIS 5.1.x | Set SSH private key permissions"
+  ansible.builtin.shell: |
+    find /etc/ssh -xdev -type f -name 'ssh_host_*_key' -exec chmod 0600 {} \;
+    find /etc/ssh -xdev -type f -name 'ssh_host_*_key.pub' -exec chmod 0644 {} \;
+  changed_when: false
+
+# --- 5.2 Configure PAM ---
+- name: "CIS 5.2.1 | Ensure password creation requirements"
+  ansible.builtin.template:
+    src: pwquality.conf.j2
+    dest: /etc/security/pwquality.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+# --- 5.3 User Accounts and Environment ---
+- name: "CIS 5.3.1 | Set password expiration policy"
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^PASS_MAX_DAYS', line: "PASS_MAX_DAYS {{ cis_password_max_days }}" }
+    - { regexp: '^PASS_MIN_DAYS', line: "PASS_MIN_DAYS {{ cis_password_min_days }}" }
+    - { regexp: '^PASS_WARN_AGE', line: "PASS_WARN_AGE {{ cis_password_warn_age }}" }
+
+- name: "CIS 5.3.2 | Set default umask"
+  ansible.builtin.lineinfile:
+    path: "{{ item }}"
+    regexp: '^\s*umask'
+    line: "umask {{ cis_umask }}"
+  loop:
+    - /etc/bash.bashrc
+    - /etc/profile
+
+- name: "CIS 5.3.3 | Set default shell timeout"
+  ansible.builtin.lineinfile:
+    path: /etc/profile.d/cis-timeout.sh
+    line: "readonly TMOUT={{ cis_login_timeout }} ; export TMOUT"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+
+# --- 5.4 Root and su access ---
+- name: "CIS 5.4.1 | Ensure root login is disabled on TTYs"
+  ansible.builtin.copy:
+    content: ""
+    dest: /etc/securetty
+    owner: root
+    group: root
+    mode: "0400"
+  failed_when: false
+
+- name: "CIS 5.4.2 | Restrict su command to wheel/sudo group"
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/su
+    regexp: '^#?\s*auth\s+required\s+pam_wheel.so'
+    line: "auth required pam_wheel.so use_uid group=sudo"

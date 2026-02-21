@@ -1,0 +1,69 @@
+---
+# ============================================================
+# CIS Ubuntu Linux LTS Benchmark - Level 1 Hardening
+# Based on CIS Benchmark v2.0.0 for Ubuntu 22.04/24.04
+# ============================================================
+
+# --- Section toggles (enable/disable CIS sections) ---
+cis_section1_initial_setup: true
+cis_section2_services: true
+cis_section3_network: true
+cis_section4_logging: true
+cis_section5_access: true
+cis_section6_maintenance: true
+
+# --- 1.1 Filesystem Configuration ---
+cis_disable_cramfs: true
+cis_disable_freevxfs: true
+cis_disable_jffs2: true
+cis_disable_hfs: true
+cis_disable_hfsplus: true
+cis_disable_squashfs: true
+cis_disable_udf: true
+cis_disable_usb_storage: true
+
+# --- 1.3 Mandatory Access Control (AppArmor) ---
+cis_enable_apparmor: true
+
+# --- 1.5 Bootloader ---
+cis_set_grub_password: false  # Set true and provide password hash
+cis_grub_password_hash: ""
+
+# --- 2. Services ---
+cis_disable_avahi: true
+cis_disable_cups: true
+cis_disable_dhcp_server: true
+cis_disable_ldap_server: true
+cis_disable_nfs: true
+cis_disable_dns_server: true
+cis_disable_ftp_server: true
+cis_disable_http_server: false  # We need nginx
+cis_disable_imap_pop3: true
+cis_disable_samba: true
+cis_disable_snmp: true
+cis_disable_rsync: true
+
+# --- 3. Network ---
+cis_disable_ipv6: false
+cis_disable_wireless: true
+cis_enable_tcp_syncookies: true
+
+# --- 4. Logging & Auditing ---
+cis_enable_auditd: true
+cis_enable_rsyslog: true
+cis_log_retention_days: 90
+
+# --- 5. Access, Authentication ---
+cis_password_max_days: 365
+cis_password_min_days: 7
+cis_password_warn_age: 7
+cis_password_min_length: 14
+cis_password_remember: 5
+cis_login_timeout: 900
+cis_umask: "027"
+
+# --- Fail2Ban ---
+install_fail2ban: true
+
+# --- Unattended Upgrades ---
+install_unattended_upgrades: true

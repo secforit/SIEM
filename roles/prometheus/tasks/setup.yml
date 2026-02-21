@@ -1,0 +1,39 @@
+---
+# ============================================================
+# Prometheus System Setup
+# ============================================================
+
+- name: Create prometheus system group
+  ansible.builtin.group:
+    name: prometheus
+    system: true
+    state: present
+
+- name: Create prometheus system user
+  ansible.builtin.user:
+    name: prometheus
+    group: prometheus
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: Create node_exporter system user
+  ansible.builtin.user:
+    name: node_exporter
+    group: prometheus
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: Create Prometheus directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: "0755"
+  loop:
+    - "{{ prometheus_config_dir }}"
+    - "{{ prometheus_config_dir }}/rules"
+    - "{{ prometheus_config_dir }}/file_sd"
+    - "{{ prometheus_data_dir }}"

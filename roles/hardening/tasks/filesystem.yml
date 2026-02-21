@@ -1,0 +1,135 @@
+---
+# ============================================================
+# CIS 1.1 - Filesystem Configuration
+# ============================================================
+
+# --- 1.1.1 Disable unused filesystems ---
+- name: "CIS 1.1.1.x | Disable unused filesystem modules"
+  ansible.builtin.template:
+    src: cis-modprobe.conf.j2
+    dest: /etc/modprobe.d/cis-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: "CIS 1.1.1.x | Unload disabled kernel modules"
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ 'cramfs' if cis_disable_cramfs else [] }}"
+    - "{{ 'freevxfs' if cis_disable_freevxfs else [] }}"
+    - "{{ 'jffs2' if cis_disable_jffs2 else [] }}"
+    - "{{ 'hfs' if cis_disable_hfs else [] }}"
+    - "{{ 'hfsplus' if cis_disable_hfsplus else [] }}"
+    - "{{ 'squashfs' if cis_disable_squashfs else [] }}"
+    - "{{ 'udf' if cis_disable_udf else [] }}"
+  when: item | length > 0
+  failed_when: false
+
+- name: "CIS 1.1.1.8 | Disable USB storage"
+  community.general.modprobe:
+    name: usb-storage
+    state: absent
+  when: cis_disable_usb_storage
+  failed_when: false
+
+# --- 1.1.2-1.1.5 Ensure /tmp, /var, /var/tmp, /var/log partitions ---
+- name: "CIS 1.1.2 | Ensure /tmp is configured with noexec,nosuid,nodev"
+  ansible.posix.mount:
+    name: /tmp
+    src: tmpfs
+    fstype: tmpfs
+    opts: "defaults,rw,nosuid,nodev,noexec,relatime,size=2G"
+    state: mounted
+
+- name: "CIS 1.1.x | Ensure /dev/shm is configured"
+  ansible.posix.mount:
+    name: /dev/shm
+    src: tmpfs
+    fstype: tmpfs
+    opts: "defaults,noexec,nodev,nosuid"
+    state: mounted
+
+# --- 1.3 AppArmor ---
+- name: "CIS 1.3.1 | Ensure AppArmor is installed"
+  ansible.builtin.apt:
+    name:
+      - apparmor
+      - apparmor-utils
+    state: present
+    update_cache: true
+  when: cis_enable_apparmor
+
+- name: "CIS 1.3.2 | Ensure AppArmor is enabled in bootloader"
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX='
+    line: 'GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"'
+    backup: true
+  when: cis_enable_apparmor
+  notify: update grub
+
+- name: "CIS 1.3.3 | Ensure all AppArmor profiles are enforcing"
+  ansible.builtin.command: aa-enforce /etc/apparmor.d/*
+  changed_when: false
+  failed_when: false
+  when: cis_enable_apparmor
+
+# --- 1.4 Filesystem integrity (AIDE) ---
+- name: "CIS 1.4.1 | Ensure AIDE is installed"
+  ansible.builtin.apt:
+    name: aide
+    state: present
+
+- name: "CIS 1.4.2 | Ensure AIDE cron job exists"
+  ansible.builtin.cron:
+    name: "AIDE integrity check"
+    minute: "0"
+    hour: "5"
+    job: "/usr/bin/aide.wrapper --config /etc/aide/aide.conf --check"
+    user: root
+
+# --- 1.5 Secure boot settings ---
+- name: "CIS 1.5.1 | Ensure permissions on bootloader config"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: "0400"
+  loop:
+    - /boot/grub/grub.cfg
+  failed_when: false
+
+# --- 1.6 Process hardening ---
+- name: "CIS 1.6.1 | Ensure core dumps are restricted"
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    regexp: '^\*.*hard.*core'
+    line: "* hard core 0"
+    insertbefore: "^# End of file"
+
+- name: "CIS 1.6.1 | Ensure core dumps restricted via sysctl"
+  ansible.posix.sysctl:
+    name: fs.suid_dumpable
+    value: "0"
+    sysctl_set: true
+    state: present
+    reload: true
+
+# --- 1.7 Banner configuration ---
+- name: "CIS 1.7.1 | Set warning banners"
+  ansible.builtin.copy:
+    content: |
+      ########################################################
+      #  Authorized access only. All activity is monitored.  #
+      #  Unauthorized access is prohibited and prosecuted.    #
+      ########################################################
+    dest: "{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - /etc/issue
+    - /etc/issue.net
+    - /etc/motd

@@ -1,0 +1,70 @@
+---
+# ============================================================
+# CIS 2.x - Services
+# ============================================================
+
+# --- 2.1 Ensure time synchronization is configured ---
+- name: "CIS 2.1.1 | Ensure chrony is installed and configured"
+  ansible.builtin.apt:
+    name: chrony
+    state: present
+
+- name: "CIS 2.1.1 | Ensure chrony is running"
+  ansible.builtin.systemd:
+    name: chrony
+    state: started
+    enabled: true
+
+# --- 2.2 Disable unnecessary services ---
+- name: "CIS 2.2.x | Disable and stop unnecessary services"
+  ansible.builtin.systemd:
+    name: "{{ item.service }}"
+    state: stopped
+    enabled: false
+    masked: true
+  loop:
+    - { service: "avahi-daemon", disable: "{{ cis_disable_avahi }}" }
+    - { service: "cups", disable: "{{ cis_disable_cups }}" }
+    - { service: "isc-dhcp-server", disable: "{{ cis_disable_dhcp_server }}" }
+    - { service: "slapd", disable: "{{ cis_disable_ldap_server }}" }
+    - { service: "nfs-server", disable: "{{ cis_disable_nfs }}" }
+    - { service: "rpcbind", disable: "{{ cis_disable_nfs }}" }
+    - { service: "named", disable: "{{ cis_disable_dns_server }}" }
+    - { service: "vsftpd", disable: "{{ cis_disable_ftp_server }}" }
+    - { service: "dovecot", disable: "{{ cis_disable_imap_pop3 }}" }
+    - { service: "smbd", disable: "{{ cis_disable_samba }}" }
+    - { service: "snmpd", disable: "{{ cis_disable_snmp }}" }
+    - { service: "rsync", disable: "{{ cis_disable_rsync }}" }
+  when: item.disable | bool
+  failed_when: false
+
+# --- 2.3 Remove unnecessary packages ---
+- name: "CIS 2.3.x | Remove unnecessary client packages"
+  ansible.builtin.apt:
+    name:
+      - telnet
+      - nis
+      - rsh-client
+      - talk
+    state: absent
+    purge: true
+  failed_when: false
+
+# --- Ensure essential security packages are installed ---
+- name: Install essential security packages
+  ansible.builtin.apt:
+    name:
+      - libpam-pwquality
+      - libpam-google-authenticator
+      - acl
+      - sudo
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - software-properties-common
+      - net-tools
+      - jq
+    state: present
+    update_cache: true

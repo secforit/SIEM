@@ -1,0 +1,63 @@
+---
+# ============================================================
+# Wazuh Indexer Installation
+# ============================================================
+
+- name: Install Wazuh Indexer
+  ansible.builtin.apt:
+    name: "wazuh-indexer={{ wazuh_version }}-*"
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Configure Wazuh Indexer
+  ansible.builtin.template:
+    src: opensearch.yml.j2
+    dest: /etc/wazuh-indexer/opensearch.yml
+    owner: wazuh-indexer
+    group: wazuh-indexer
+    mode: "0660"
+  notify: restart wazuh-indexer
+
+- name: Configure Wazuh Indexer JVM options
+  ansible.builtin.template:
+    src: jvm.options.j2
+    dest: /etc/wazuh-indexer/jvm.options.d/wazuh-custom.options
+    owner: wazuh-indexer
+    group: wazuh-indexer
+    mode: "0660"
+  notify: restart wazuh-indexer
+
+- name: Deploy Indexer certificates
+  ansible.builtin.shell: |
+    mkdir -p /etc/wazuh-indexer/certs
+    tar -xzf /tmp/wazuh-certificates.tar.gz -C /etc/wazuh-indexer/certs/ \
+      wazuh-certificates/{{ wazuh_indexer_node_name }}.pem \
+      wazuh-certificates/{{ wazuh_indexer_node_name }}-key.pem \
+      wazuh-certificates/admin.pem \
+      wazuh-certificates/admin-key.pem \
+      wazuh-certificates/root-ca.pem --strip-components=1
+    chmod 500 /etc/wazuh-indexer/certs
+    chmod 400 /etc/wazuh-indexer/certs/*
+    chown -R wazuh-indexer:wazuh-indexer /etc/wazuh-indexer/certs
+  args:
+    creates: /etc/wazuh-indexer/certs/root-ca.pem
+
+- name: Enable and start Wazuh Indexer
+  ansible.builtin.systemd:
+    name: wazuh-indexer
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Wait for Wazuh Indexer to be ready
+  ansible.builtin.wait_for:
+    port: "{{ wazuh_indexer_port }}"
+    delay: 10
+    timeout: 120
+
+- name: Initialize security settings
+  ansible.builtin.command: /usr/share/wazuh-indexer/bin/indexer-security-init.sh
+  register: security_init
+  changed_when: "'Done' in security_init.stdout"
+  failed_when: false

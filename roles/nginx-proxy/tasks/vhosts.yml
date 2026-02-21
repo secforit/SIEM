@@ -1,0 +1,34 @@
+---
+# ============================================================
+# Virtual Host Configuration
+# ============================================================
+
+# First deploy HTTP-only vhosts (for initial certbot validation)
+- name: Deploy HTTP virtual hosts (pre-SSL)
+  ansible.builtin.template:
+    src: vhost-http.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.server_name }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ nginx_vhosts }}"
+  notify: reload nginx
+
+- name: Enable HTTP virtual hosts
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item.server_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ item.server_name }}.conf"
+    state: link
+  loop: "{{ nginx_vhosts }}"
+  notify: reload nginx
+
+# Create htpasswd for Prometheus if needed
+- name: Create htpasswd for Prometheus
+  community.general.htpasswd:
+    path: /etc/nginx/.htpasswd_prometheus
+    name: admin
+    password: "CHANGE_ME_prometheus_password"
+    owner: root
+    group: www-data
+    mode: "0640"
+  when: nginx_vhosts | selectattr('auth_basic', 'defined') | list | length > 0

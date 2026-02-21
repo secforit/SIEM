@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+# CIS 4.1 - auditd configuration
+
+log_file = /var/log/audit/audit.log
+log_format = RAW
+log_group = adm
+max_log_file = {{ auditd_max_log_file }}
+num_logs = {{ auditd_num_logs }}
+max_log_file_action = {{ auditd_max_log_file_action }}
+space_left = 75
+space_left_action = email
+action_mail_acct = root
+admin_space_left = 50
+admin_space_left_action = halt
+disk_full_action = halt
+disk_error_action = halt
+flush = incremental_async
+freq = 50
+name_format = hostname

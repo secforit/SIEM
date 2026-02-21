@@ -1,0 +1,95 @@
+---
+# ============================================================
+# SecForIT SIEM Platform - Main Playbook
+# ============================================================
+# Deploys: Ubuntu Hardening (CIS L1) + Wazuh 4.14.3 SIEM +
+#          Prometheus + Grafana + Nginx Reverse Proxy + SSL
+#
+# Usage:
+#   Full deployment:
+#     ansible-playbook site.yml
+#
+#   Individual roles:
+#     ansible-playbook site.yml --tags hardening
+#     ansible-playbook site.yml --tags wazuh
+#     ansible-playbook site.yml --tags prometheus
+#     ansible-playbook site.yml --tags grafana
+#     ansible-playbook site.yml --tags nginx
+#
+#   Skip roles:
+#     ansible-playbook site.yml --skip-tags hardening
+# ============================================================
+
+- name: SecForIT SIEM Platform Deployment
+  hosts: all
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Validate target OS
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_distribution_version is version('22.04', '>=')
+        fail_msg: "This playbook requires Ubuntu 22.04 or later. Detected: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+        success_msg: "OS validated: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Ensure snapd is installed (for certbot)
+      ansible.builtin.apt:
+        name: snapd
+        state: present
+
+  roles:
+    # 1. Harden the OS first (CIS Level 1)
+    - role: hardening
+      tags: [hardening, security]
+
+    # 2. Deploy Wazuh SIEM (Indexer + Manager + Dashboard)
+    - role: wazuh
+      tags: [wazuh, siem]
+
+    # 3. Deploy Prometheus + Node Exporter
+    - role: prometheus
+      tags: [prometheus, monitoring]
+
+    # 4. Deploy Grafana with dashboards
+    - role: grafana
+      tags: [grafana, monitoring]
+
+    # 5. Deploy Nginx reverse proxy + SSL
+    - role: nginx-proxy
+      tags: [nginx, proxy, ssl]
+
+  post_tasks:
+    - name: Display deployment summary
+      ansible.builtin.debug:
+        msg: |
+          ╔══════════════════════════════════════════════════════════════╗
+          ║           SecForIT SIEM Platform - Deployed!                ║
+          ╠══════════════════════════════════════════════════════════════╣
+          ║                                                            ║
+          ║  Services:                                                 ║
+          ║  ─────────                                                 ║
+          ║  Wazuh Dashboard:  https://siem.secforit.ro                ║
+          ║  Grafana:          https://grafana.secforit.ro             ║
+          ║  Prometheus:       https://prometheus.secforit.ro          ║
+          ║                                                            ║
+          ║  Internal Ports:                                           ║
+          ║  ───────────────                                           ║
+          ║  Wazuh Manager:    1514/tcp (agents), 55000/tcp (API)      ║
+          ║  Wazuh Indexer:    9200/tcp                                ║
+          ║  Wazuh Dashboard:  5601/tcp (via Nginx on 443)             ║
+          ║  Prometheus:       9090/tcp (via Nginx on 443)             ║
+          ║  Node Exporter:    9100/tcp (localhost only)               ║
+          ║  Grafana:          3000/tcp (via Nginx on 443)             ║
+          ║                                                            ║
+          ║  IMPORTANT: Change all default passwords in                ║
+          ║  group_vars/all.yml before production use!                 ║
+          ║                                                            ║
+          ╚══════════════════════════════════════════════════════════════╝
+      tags: always
