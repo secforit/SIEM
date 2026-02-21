@@ -5,7 +5,7 @@
 # ============================================================
 
 domain_name: "secforit.ro"
-certbot_email: "admin@secforit.ro"
+certbot_email: "lismanrazvan420@gmail.com"
 
 # Nginx settings
 nginx_worker_processes: "auto"

@@ -27,7 +27,7 @@
   community.general.htpasswd:
     path: /etc/nginx/.htpasswd_prometheus
     name: admin
-    password: "CHANGE_ME_prometheus_password"
+    password: "jC9QbroraFWyO2kP"
     owner: root
     group: www-data
     mode: "0640"

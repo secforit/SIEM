@@ -16,10 +16,10 @@ grafana_serve_from_sub_path: false
 
 # Admin
 grafana_admin_user: "admin"
-grafana_admin_password: "CHANGE_ME_grafana_password"
+grafana_admin_password: "iPz2DQv5DHrGURNvyHlvtr"
 
 # Security
-grafana_secret_key: "CHANGE_ME_secret_key_32_chars_min"
+grafana_secret_key: "8Ue3z6WU0llrkLzegf7uQrseooKb92xp"
 grafana_disable_gravatar: true
 grafana_cookie_secure: true
 grafana_cookie_samesite: "strict"
@@ -46,7 +46,7 @@ grafana_datasources:
     database: "wazuh-alerts-*"
     basic_auth: true
     basic_auth_user: "admin"
-    basic_auth_password: "CHANGE_ME_indexer_admin_password"
+    basic_auth_password: "LrNP9GJv3OMRzANPHU5gH#"
     json_data:
       esVersion: "7.10.2"
       timeField: "timestamp"

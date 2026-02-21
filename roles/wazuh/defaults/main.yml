@@ -13,7 +13,7 @@ wazuh_indexer_node_name: "node-1"
 wazuh_indexer_ip: "127.0.0.1"
 wazuh_indexer_port: 9200
 wazuh_indexer_java_heap: "1g"
-wazuh_indexer_admin_password: "CHANGE_ME_indexer_admin_password"
+wazuh_indexer_admin_password: "LrNP9GJv3OMRzANPHU5gH#"
 
 # --- Wazuh Manager ---
 wazuh_manager_ip: "127.0.0.1"
@@ -21,7 +21,7 @@ wazuh_manager_port: 1514
 wazuh_manager_registration_port: 1515
 wazuh_manager_api_port: 55000
 wazuh_manager_api_user: "wazuh-wui"
-wazuh_manager_api_password: "CHANGE_ME_wazuh_api_password"
+wazuh_manager_api_password: "jhJKWHk8BP1OQtGH@xt4al"
 
 # --- Wazuh Dashboard ---
 wazuh_dashboard_ip: "127.0.0.1"

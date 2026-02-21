@@ -10,7 +10,7 @@ grafana_subdomain: "grafana.{{ domain_name }}"
 prometheus_subdomain: "prometheus.{{ domain_name }}"
 wazuh_subdomain: "wazuh.{{ domain_name }}"
 
-certbot_email: "admin@{{ domain_name }}"
+certbot_email: "lismanrazvan420@gmail.com"
 certbot_auto_renew: true
 
 # --- Ubuntu Version ---
@@ -23,7 +23,7 @@ ssh_password_authentication: "no"
 ssh_max_auth_tries: 3
 ssh_client_alive_interval: 300
 ssh_client_alive_count_max: 2
-ssh_allowed_users: "deploy"
+ssh_allowed_users: "razvan"
 
 # --- Firewall (UFW) ---
 ufw_default_incoming: "deny"
@@ -45,8 +45,8 @@ wazuh_manager_ip: "127.0.0.1"
 wazuh_indexer_ip: "127.0.0.1"
 wazuh_dashboard_ip: "127.0.0.1"
 wazuh_api_user: "wazuh-wui"
-wazuh_api_password: "CHANGE_ME_wazuh_api_password"
-wazuh_indexer_admin_password: "CHANGE_ME_indexer_admin_password"
+wazuh_api_password: "jhJKWHk8BP1OQtGH@xt4al"
+wazuh_indexer_admin_password: "LrNP9GJv3OMRzANPHU5gH#"
 
 # --- Prometheus ---
 prometheus_version: "2.54.1"  # Latest stable as of Feb 2026
@@ -60,7 +60,7 @@ node_exporter_listen_address: "127.0.0.1:9100"
 # --- Grafana ---
 grafana_version: "11.4.0"  # Latest stable
 grafana_admin_user: "admin"
-grafana_admin_password: "CHANGE_ME_grafana_password"
+grafana_admin_password: "iPz2DQv5DHrGURNvyHlvtr"
 grafana_listen_address: "127.0.0.1"
 grafana_port: 3000
 grafana_domain: "{{ grafana_subdomain }}"

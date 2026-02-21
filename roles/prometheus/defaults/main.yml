@@ -50,7 +50,7 @@ prometheus_scrape_configs:
       insecure_skip_verify: true
     basic_auth:
       username: "wazuh-wui"
-      password: "CHANGE_ME_wazuh_api_password"
+      password: "jhJKWHk8BP1OQtGH@xt4al"
     static_configs:
       - targets: ["127.0.0.1:55000"]
         labels:
