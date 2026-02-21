@@ -1,6 +1,7 @@
 ---
 # ============================================================
 # SecForIT SIEM Platform - Main Playbook
+# Hetzner Server: 37.27.94.252 (8GB RAM, Ubuntu 24.04)
 # ============================================================
 # Deploys: Ubuntu Hardening (CIS L1) + Wazuh 4.14.3 SIEM +
 #          Prometheus + Grafana + Nginx Reverse Proxy + SSL
@@ -18,6 +19,9 @@
 #
 #   Skip roles:
 #     ansible-playbook site.yml --skip-tags hardening
+#
+#   Dry run:
+#     ansible-playbook site.yml --check --diff
 # ============================================================
 
 - name: SecForIT SIEM Platform Deployment
@@ -34,15 +38,57 @@
         fail_msg: "This playbook requires Ubuntu 22.04 or later. Detected: {{ ansible_distribution }} {{ ansible_distribution_version }}"
         success_msg: "OS validated: {{ ansible_distribution }} {{ ansible_distribution_version }}"
 
+    - name: Check minimum RAM (8GB required)
+      ansible.builtin.assert:
+        that:
+          - ansible_memtotal_mb >= 7000
+        fail_msg: "Minimum 8GB RAM required. Detected: {{ ansible_memtotal_mb }}MB"
+        success_msg: "RAM OK: {{ ansible_memtotal_mb }}MB"
+
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
 
+    - name: Full system upgrade
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: true
+      tags: [hardening]
+
     - name: Ensure snapd is installed (for certbot)
       ansible.builtin.apt:
         name: snapd
         state: present
+
+    - name: Set timezone
+      community.general.timezone:
+        name: Europe/Bucharest
+
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: siem.secforit.ro
+
+    - name: Update /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: "127.0.1.1 siem.secforit.ro siem"
+
+    - name: Configure swap (2GB) for 8GB server
+      ansible.builtin.shell: |
+        if [ ! -f /swapfile ]; then
+          fallocate -l 2G /swapfile
+          chmod 600 /swapfile
+          mkswap /swapfile
+          swapon /swapfile
+          echo '/swapfile none swap sw 0 0' >> /etc/fstab
+          sysctl vm.swappiness=10
+          echo 'vm.swappiness=10' >> /etc/sysctl.conf
+        fi
+      args:
+        creates: /swapfile
+      tags: [hardening]
 
   roles:
     # 1. Harden the OS first (CIS Level 1)
@@ -70,26 +116,29 @@
       ansible.builtin.debug:
         msg: |
           ╔══════════════════════════════════════════════════════════════╗
-          ║           SecForIT SIEM Platform - Deployed!                ║
+          ║        SecForIT SIEM Platform - Deployed!                   ║
+          ║        Server: 37.27.94.252 (Hetzner, 8GB RAM)             ║
           ╠══════════════════════════════════════════════════════════════╣
           ║                                                            ║
-          ║  Services:                                                 ║
-          ║  ─────────                                                 ║
+          ║  Public URLs (via Nginx + Let's Encrypt):                  ║
+          ║  ────────────────────────────────────────                  ║
           ║  Wazuh Dashboard:  https://siem.secforit.ro                ║
           ║  Grafana:          https://grafana.secforit.ro             ║
           ║  Prometheus:       https://prometheus.secforit.ro          ║
           ║                                                            ║
-          ║  Internal Ports:                                           ║
-          ║  ───────────────                                           ║
-          ║  Wazuh Manager:    1514/tcp (agents), 55000/tcp (API)      ║
-          ║  Wazuh Indexer:    9200/tcp                                ║
-          ║  Wazuh Dashboard:  5601/tcp (via Nginx on 443)             ║
-          ║  Prometheus:       9090/tcp (via Nginx on 443)             ║
-          ║  Node Exporter:    9100/tcp (localhost only)               ║
-          ║  Grafana:          3000/tcp (via Nginx on 443)             ║
+          ║  Wazuh Agent Ports (public):                               ║
+          ║  ────────────────────────────                              ║
+          ║  Agent connection:   37.27.94.252:1514/tcp                 ║
+          ║  Agent registration: 37.27.94.252:1515/tcp                 ║
           ║                                                            ║
-          ║  IMPORTANT: Change all default passwords in                ║
-          ║  group_vars/all.yml before production use!                 ║
+          ║  Internal Only (127.0.0.1, NOT exposed):                   ║
+          ║  ──────────────────────────────────────                    ║
+          ║  Wazuh Indexer:    127.0.0.1:9200                          ║
+          ║  Wazuh Dashboard:  127.0.0.1:5601                          ║
+          ║  Wazuh API:        127.0.0.1:55000                         ║
+          ║  Prometheus:       127.0.0.1:9090                          ║
+          ║  Node Exporter:    127.0.0.1:9100                          ║
+          ║  Grafana:          127.0.0.1:3000                          ║
           ║                                                            ║
           ╚══════════════════════════════════════════════════════════════╝
       tags: always

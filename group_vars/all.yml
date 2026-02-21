@@ -1,7 +1,11 @@
 ---
 # ============================================================
 # Global Variables - SecForIT SIEM Platform
+# Hetzner Server: 37.27.94.252 (8GB RAM)
 # ============================================================
+
+# --- Server ---
+server_public_ip: "37.27.94.252"
 
 # --- Domain & Network ---
 domain_name: "secforit.ro"
@@ -14,7 +18,7 @@ certbot_email: "lismanrazvan420@gmail.com"
 certbot_auto_renew: true
 
 # --- Ubuntu Version ---
-ubuntu_version: "24.04"  # or "22.04"
+ubuntu_version: "24.04"
 
 # --- SSH Hardening ---
 ssh_port: 22
@@ -26,18 +30,16 @@ ssh_client_alive_count_max: 2
 ssh_allowed_users: "razvan"
 
 # --- Firewall (UFW) ---
+# PUBLIC SERVER: Only expose SSH, HTTP, HTTPS, and Wazuh agent ports
+# All internal services (9200, 9090, 3000, 5601) stay on 127.0.0.1
 ufw_default_incoming: "deny"
 ufw_default_outgoing: "allow"
 ufw_allowed_ports:
   - { port: "{{ ssh_port }}", proto: "tcp", comment: "SSH" }
-  - { port: "80", proto: "tcp", comment: "HTTP" }
-  - { port: "443", proto: "tcp", comment: "HTTPS" }
-  - { port: "1514", proto: "tcp", comment: "Wazuh Agent" }
-  - { port: "1515", proto: "tcp", comment: "Wazuh Registration" }
-  - { port: "55000", proto: "tcp", comment: "Wazuh API" }
-  - { port: "9200", proto: "tcp", comment: "Wazuh Indexer" }
-  - { port: "9090", proto: "tcp", comment: "Prometheus" }
-  - { port: "3000", proto: "tcp", comment: "Grafana" }
+  - { port: "80", proto: "tcp", comment: "HTTP (certbot + redirect)" }
+  - { port: "443", proto: "tcp", comment: "HTTPS (Nginx reverse proxy)" }
+  - { port: "1514", proto: "tcp", comment: "Wazuh Agent enrollment" }
+  - { port: "1515", proto: "tcp", comment: "Wazuh Agent registration" }
 
 # --- Wazuh 4.14.3 ---
 wazuh_version: "4.14.3"
@@ -48,17 +50,17 @@ wazuh_api_user: "wazuh-wui"
 wazuh_api_password: "jhJKWHk8BP1OQtGH@xt4al"
 wazuh_indexer_admin_password: "LrNP9GJv3OMRzANPHU5gH#"
 
-# --- Prometheus ---
-prometheus_version: "2.54.1"  # Latest stable as of Feb 2026
-prometheus_retention_time: "30d"
-prometheus_retention_size: "10GB"
+# --- Prometheus (8GB RAM optimization) ---
+prometheus_version: "2.54.1"
+prometheus_retention_time: "15d"
+prometheus_retention_size: "5GB"
 prometheus_listen_address: "127.0.0.1:9090"
 
 node_exporter_version: "1.8.2"
 node_exporter_listen_address: "127.0.0.1:9100"
 
 # --- Grafana ---
-grafana_version: "11.4.0"  # Latest stable
+grafana_version: "11.4.0"
 grafana_admin_user: "admin"
 grafana_admin_password: "iPz2DQv5DHrGURNvyHlvtr"
 grafana_listen_address: "127.0.0.1"
@@ -70,11 +72,23 @@ nginx_worker_processes: "auto"
 nginx_worker_connections: 1024
 
 # --- Fail2Ban ---
-fail2ban_maxretry: 5
-fail2ban_bantime: 3600
+fail2ban_maxretry: 3
+fail2ban_bantime: 7200
 fail2ban_findtime: 600
 
 # --- Audit ---
-auditd_max_log_file: 50
-auditd_num_logs: 10
+auditd_max_log_file: 25
+auditd_num_logs: 5
 auditd_max_log_file_action: "rotate"
+
+# --- 8GB RAM Memory Budget ---
+# Wazuh Indexer (OpenSearch): 1.5GB heap (3GB total with overhead)
+# Wazuh Manager:              ~1GB
+# Wazuh Dashboard:            ~512MB
+# Filebeat:                   ~256MB
+# Prometheus:                 ~512MB
+# Grafana:                    ~256MB
+# Node Exporter:              ~50MB
+# Nginx:                      ~50MB
+# OS + auditd + fail2ban:     ~1.5GB
+# TOTAL:                      ~7.1GB / 8GB

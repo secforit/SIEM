@@ -1,14 +1,14 @@
 ---
 # ============================================================
 # Prometheus + Node Exporter Configuration
-# Uses prometheus.prometheus collection roles
+# Optimized for 8GB RAM Hetzner server
 # ============================================================
 
 # --- Prometheus Server ---
 prometheus_version: "2.54.1"
 prometheus_listen_address: "127.0.0.1:9090"
-prometheus_storage_retention: "30d"
-prometheus_storage_retention_size: "10GB"
+prometheus_storage_retention: "15d"
+prometheus_storage_retention_size: "5GB"
 prometheus_data_dir: "/var/lib/prometheus"
 prometheus_config_dir: "/etc/prometheus"
 
@@ -67,7 +67,7 @@ prometheus_alert_rules:
       summary: "High CPU usage on {{ '{{ $labels.instance }}' }}"
 
   - alert: HighMemoryUsage
-    expr: "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90"
+    expr: "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85"
     for: 5m
     labels:
       severity: critical

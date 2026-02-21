@@ -1,6 +1,7 @@
 ---
 # ============================================================
 # Wazuh 4.14.3 - All-in-One Single Node Deployment
+# Optimized for 8GB RAM Hetzner server
 # ============================================================
 
 wazuh_version: "4.14.3"
@@ -43,6 +44,7 @@ wazuh_manager_rootcheck_enabled: true
 wazuh_manager_syscheck_enabled: true
 wazuh_manager_active_response: true
 
-# --- Memory limits (single-node optimization) ---
-wazuh_indexer_max_memory: "2g"
-wazuh_manager_max_memory: "1g"
+# --- Memory limits (8GB server optimization) ---
+# Indexer heap 1GB = ~2GB total with overhead (OpenSearch rule: heap <= 50% RAM)
+wazuh_indexer_max_memory: "1g"
+wazuh_manager_max_memory: "512m"
