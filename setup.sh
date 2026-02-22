@@ -32,7 +32,8 @@ else
 fi
 
 if ! command -v git &> /dev/null; then
-    echo "  Installing git..."
+    ec
+    ho "  Installing git..."
     sudo apt install -y git 2>/dev/null || brew install git 2>/dev/null
 fi
 
